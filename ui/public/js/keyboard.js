@@ -1,4 +1,4 @@
-import { store, el, select, instrumentOptions, noteName, isBlack, debounce, keyLabel, progressText, defaultOpts, isTyping } from './util.js';
+import { store, el, select, instrumentOptions, noteName, isBlack, debounce, keyLabel, progressText, defaultOpts, isTyping, noteRange } from './util.js';
 import { soundUrl, getBuffer, peekBuffer, playBuffer, prefetch, unlockAudio } from './audio.js';
 
 const PIANO_CODES = ['KeyA', 'KeyW', 'KeyS', 'KeyE', 'KeyD', 'KeyF', 'KeyT', 'KeyG', 'KeyY', 'KeyH', 'KeyU', 'KeyJ', 'KeyK', 'KeyO', 'KeyL', 'KeyP', 'Semicolon', 'Quote'];
@@ -53,22 +53,24 @@ export function createKeyboard(root) {
     }
     return out;
   };
+  const range = () => noteRange(inst(), opts());
   const persist = () => saveSettings(state);
 
   // The computer keys cover the lowest octave and a half, so most of them must be in range.
   const baseFits = (base, [lo, hi]) => base > lo - 12 && base <= hi - 12 && base >= 0 && base <= 96;
 
-  // On switching instruments, pick the C that puts the most computer keys in range,
+  // On switching instruments or presets, pick the C that puts the most computer keys in range,
   // preferring the current octave on a tie.
   let fittedFor = null;
   function fitBase(i) {
-    if (!i.range || fittedFor === i.id) return;
-    fittedFor = i.id;
-    const [lo, hi] = i.range;
+    const r = range();
+    if (!r || fittedFor === `${i.id}|${r}`) return;
+    fittedFor = `${i.id}|${r}`;
+    const [lo, hi] = r;
     const inRange = (b) => PIANO_CODES.filter((_, k) => b + k >= lo && b + k <= hi).length;
-    let best = baseFits(state.base, i.range) ? state.base : null;
+    let best = baseFits(state.base, r) ? state.base : null;
     for (let b = 0; b <= 96; b += 12) {
-      if (!baseFits(b, i.range)) continue;
+      if (!baseFits(b, r)) continue;
       if (best === null || inRange(b) > inRange(best)
         || (inRange(b) === inRange(best) && Math.abs(b - state.base) < Math.abs(best - state.base))) best = b;
     }
@@ -87,7 +89,7 @@ export function createKeyboard(root) {
   function trigger(target) {
     const i = inst();
     if (!i || !i.available) return;
-    if (typeof target === 'number' && (target < i.range[0] || target > i.range[1])) return;
+    if (typeof target === 'number' && (target < range()[0] || target > range()[1])) return;
     unlockAudio();
     const url = soundFor(target);
     const buf = peekBuffer(url);
@@ -113,7 +115,8 @@ export function createKeyboard(root) {
   const prerender = debounce(() => {
     const i = inst();
     if (!i || !i.available) return;
-    const targets = i.pads ? i.pads.map((p) => p.id) : visibleNotes().filter((m) => m >= i.range[0] && m <= i.range[1]);
+    const [lo, hi] = i.pads ? [] : range();
+    const targets = i.pads ? i.pads.map((p) => p.id) : visibleNotes().filter((m) => m >= lo && m <= hi);
     prefetch(targets.map(soundFor), (p) => setProgress(progressText(p)));
   }, 200);
 
@@ -132,11 +135,12 @@ export function createKeyboard(root) {
 
   function buildPiano(i) {
     const notes = visibleNotes();
+    const [lo, hi] = range();
     const whites = notes.filter((m) => !isBlack(m));
     const w = 100 / whites.length;
     const piano = el('div', { class: 'piano-keys' });
     for (const m of notes) {
-      const inRange = m >= i.range[0] && m <= i.range[1];
+      const inRange = m >= lo && m <= hi;
       const code = keyCodeFor(m);
       const key = el('button', {
         type: 'button', tabindex: '-1',
@@ -242,9 +246,10 @@ export function createKeyboard(root) {
     for (const o of i.options || []) {
       controls.append(el('label', { class: 'field' }, el('span', { text: o.label }),
         select(o.values.map((v) => ({ value: v.id, label: v.label })), opts()[o.key], (v) => {
+          const before = String(range());
           state.optsByInst[i.id] = { ...(state.optsByInst[i.id] || {}), [o.key]: v };
           persist();
-          prerender();
+          if (String(range()) !== before) render(); else prerender();
         })));
     }
     progressEl = el('span', { class: 'progress', 'aria-live': 'polite' });
@@ -252,7 +257,7 @@ export function createKeyboard(root) {
 
     const help = i.pads
       ? 'Klick oder tippe auf die Pads, oder nutze die Tasten auf deiner Tastatur.'
-      : `Spiel mit Maus, Touch oder Tastatur (${keyLabel('KeyA')} ${keyLabel('KeyW')} ${keyLabel('KeyS')} ${keyLabel('KeyE')} ${keyLabel('KeyD')} …). ${keyLabel('KeyZ')} und ${keyLabel('KeyX')} oder die Pfeiltasten wechseln die Oktave. Ein Ton klingt so lange, wie die Tonlänge sagt.`;
+      : `Spiel mit Maus, Touch oder Tastatur (${keyLabel('KeyA')} ${keyLabel('KeyW')} ${keyLabel('KeyS')} ${keyLabel('KeyE')} ${keyLabel('KeyD')} …). ${keyLabel('KeyZ')} und ${keyLabel('KeyX')} oder die Pfeiltasten wechseln die Oktave. ${i.usesDuration ? 'Ein Ton klingt so lange, wie die Tonlänge sagt.' : 'Wie lange ein Ton klingt, bestimmt das Instrument selbst.'}`;
 
     root.append(
       el('div', { class: 'view-head' }, el('div', {}, el('h1', { text: i.name }), el('p', { class: 'muted', text: help }))),
@@ -266,7 +271,7 @@ export function createKeyboard(root) {
     const i = inst();
     if (!i || i.pads) return;
     const next = state.base + 12 * d;
-    if (!baseFits(next, i.range)) return;
+    if (!baseFits(next, range())) return;
     state.base = next;
     persist();
     render();

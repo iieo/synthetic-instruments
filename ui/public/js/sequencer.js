@@ -1,4 +1,4 @@
-import { store, el, select, instrumentOptions, noteName, debounce, progressText, defaultOpts, isTyping } from './util.js';
+import { store, el, select, instrumentOptions, noteName, debounce, progressText, defaultOpts, isTyping, noteRange, optionApplies } from './util.js';
 import { audioCtx, masterNode, buildMaster, soundUrl, getBuffer, peekBuffer, prefetch, unlockAudio, encodeWav } from './audio.js';
 
 const MAX_STEPS = 32;
@@ -23,8 +23,15 @@ function makeRow(instId, extra = {}) {
     opts: { ...(inst ? defaultOpts(inst) : {}), ...(extra.opts || {}) },
   };
   if (inst && inst.pads && !inst.pads.some((p) => p.id === row.pad)) row.pad = inst.pads[0].id;
-  if (inst && inst.range) row.note = clamp(row.note, inst.range[0], inst.range[1]);
+  if (inst && inst.range) fitRow(row, inst);
   return row;
+}
+
+// Keeps the row's note and its per-step notes inside the range of the chosen preset.
+function fitRow(row, inst) {
+  const [lo, hi] = noteRange(inst, row.opts);
+  row.note = clamp(row.note, lo, hi);
+  for (const s of row.steps) if (s && s.n !== undefined && (s.n < lo || s.n > hi)) delete s.n;
 }
 
 function hits(list, v = 0.8, notes = {}) {
@@ -70,9 +77,32 @@ function ravePattern() {
   return { bpm: 150, swing: 0, length: 32, rows };
 }
 
+// Two bars in D minor, chords Dm Bb F A. Over the bass the top strings rise A, Bb, C, C# (half, whole, half step).
+function orchestraPattern() {
+  if (!ok('timpani') || !ok('string-ensemble') || !ok('tuba')) return null;
+  const rows = [];
+  const notesAt = (steps, notes) => Object.fromEntries(steps.map((s, k) => [s, notes[k]]));
+  const chords = [0, 8, 16, 24];
+  rows.push(makeRow('string-ensemble', { note: 69, len: 8, vol: 0.5, opts: { preset: 'legato' }, steps: hits(chords, 0.7, notesAt(chords, [69, 70, 72, 73])) }));
+  rows.push(makeRow('string-ensemble', { note: 62, len: 8, vol: 0.45, opts: { preset: 'legato' }, steps: hits(chords, 0.6, notesAt(chords, [62, 62, 60, 61])) }));
+  const bass = [0, 4, 8, 12, 16, 20, 24, 28];
+  rows.push(makeRow('tuba', { note: 38, len: 3, vol: 0.6, steps: hits(bass, 0.7, notesAt(bass, [38, 45, 34, 41, 41, 36, 33, 40])) }));
+  const timp = hits([0, 8, 16, 24, 28, 30], 0.8, { 8: 46, 16: 41, 24: 45, 28: 45, 30: 45 });
+  timp[0].v = 1; timp[28].v = 0.5; timp[30].v = 0.5;
+  rows.push(makeRow('timpani', { note: 50, len: 4, vol: 0.75, steps: timp }));
+  if (ok('harpsichord')) {
+    const arp = Array.from({ length: 16 }, (_, k) => k * 2);
+    const tones = [74, 77, 81, 77, 74, 77, 82, 77, 72, 77, 81, 77, 73, 76, 81, 76];
+    rows.push(makeRow('harpsichord', { note: 74, len: 2, vol: 0.35, steps: hits(arp, 0.6, notesAt(arp, tones)) }));
+  }
+  if (ok('gong')) rows.push(makeRow('gong', { note: 40, vol: 0.3, opts: { preset: 'tamtam' }, steps: hits([0], 0.6) }));
+  return { bpm: 90, swing: 0, length: 32, rows };
+}
+
 const EXAMPLES = [
   { id: 'techno', label: 'Techno 128', build: () => defaultPattern() },
   { id: 'rave', label: 'Rave 150', build: () => ravePattern() },
+  { id: 'orchester', label: 'Orchester 90', build: () => orchestraPattern() },
 ];
 
 export function defaultPattern() {
@@ -124,12 +154,8 @@ function sanitize(p) {
     length: p.length === 32 ? 32 : 16,
     rows: p.rows.filter((r) => isObj(r) && typeof r.inst === 'string' && r.inst).map((r) => {
       const inst = store.byId.get(r.inst);
-      const range = inst && inst.range;
-      const inRange = (n) => Number.isInteger(n) && (!range || (n >= range[0] && n <= range[1]));
       let pad = typeof r.pad === 'string' ? r.pad : null;
       if (inst && inst.pads && !inst.pads.some((x) => x.id === pad)) pad = inst.pads[0].id;
-      let note = Number.isInteger(r.note) ? r.note : 48;
-      if (range) note = clamp(note, range[0], range[1]);
       const opts = inst ? defaultOpts(inst) : {};
       if (isObj(r.opts)) {
         for (const [k, v] of Object.entries(r.opts)) {
@@ -138,6 +164,10 @@ function sanitize(p) {
           if (o && o.values.some((x) => x.id === v)) opts[k] = v;
         }
       }
+      const range = inst && noteRange(inst, opts);
+      const inRange = (n) => Number.isInteger(n) && (!range || (n >= range[0] && n <= range[1]));
+      let note = Number.isInteger(r.note) ? r.note : 48;
+      if (range) note = clamp(note, range[0], range[1]);
       return {
         id: newId(), inst: r.inst, pad, note, opts,
         len: LENS.includes(r.len) ? r.len : 2, vol: num(r.vol, 0.8, 0, 1), mute: r.mute === true, solo: r.solo === true,
@@ -184,7 +214,8 @@ export function createSequencer(root) {
     const inst = store.byId.get(row.inst);
     if (!inst || !inst.available) return null;
     const dur = Math.max(0.05, Math.round((row.len * stepDur()) / 0.05) * 0.05);
-    const midi = inst.range ? clamp(s.n ?? row.note, inst.range[0], inst.range[1]) : undefined;
+    const r = inst.range && noteRange(inst, row.opts);
+    const midi = r ? clamp(s.n ?? row.note, r[0], r[1]) : undefined;
     return soundUrl(inst, { midi, pad: row.pad, velocity: s.v, duration: dur, bpm: pattern.bpm, opts: row.opts });
   }
 
@@ -396,8 +427,9 @@ export function createSequencer(root) {
     const s = row.steps[i];
     const fields = [];
     if (inst && inst.range) {
+      const [lo, hi] = noteRange(inst, row.opts);
       const notes = [];
-      for (let m = inst.range[1]; m >= inst.range[0]; m--) notes.push({ value: String(m), label: noteName(m) + (m === row.note ? ' (Spur)' : '') });
+      for (let m = hi; m >= lo; m--) notes.push({ value: String(m), label: noteName(m) + (m === row.note ? ' (Spur)' : '') });
       fields.push(el('label', { class: 'field' }, el('span', { text: 'Ton' }),
         select(notes, String(s.n ?? row.note), (v) => {
           const n = Number(v);
@@ -449,18 +481,20 @@ export function createSequencer(root) {
     head.append(select(instrumentOptions(), row.inst, (v) => {
       const next = makeRow(v, { note: row.note });
       Object.assign(row, { inst: v, pad: next.pad, note: next.note, opts: next.opts });
-      const r = store.byId.get(v)?.range;
-      if (r) for (const s of row.steps) if (s && s.n !== undefined && (s.n < r[0] || s.n > r[1])) delete s.n;
+      const nextInst = store.byId.get(v);
+      if (nextInst && nextInst.range) fitRow(row, nextInst);
       changed({ rebuild: true });
     }, { 'aria-label': 'Instrument der Spur', class: 'grow' }));
     if (!inst || !inst.available) {
       head.append(el('span', { class: 'error small', text: 'nicht verfügbar' }));
     } else {
       if (inst.pads) {
-        head.append(select(inst.pads.map((p) => ({ value: p.id, label: p.label })), row.pad, (v) => { row.pad = v; changed(); }, { 'aria-label': 'Stimme' }));
+        const scoped = (inst.options || []).some((o) => o.pads);
+        head.append(select(inst.pads.map((p) => ({ value: p.id, label: p.label })), row.pad, (v) => { row.pad = v; changed({ rebuild: scoped }); }, { 'aria-label': 'Stimme' }));
       } else {
+        const [lo, hi] = noteRange(inst, row.opts);
         const notes = [];
-        for (let m = inst.range[1]; m >= inst.range[0]; m--) notes.push({ value: String(m), label: noteName(m) });
+        for (let m = hi; m >= lo; m--) notes.push({ value: String(m), label: noteName(m) });
         head.append(select(notes, String(row.note), (v) => { row.note = Number(v); changed({ rebuild: true }); }, { 'aria-label': 'Grundton der Spur' }));
       }
       if (inst.usesDuration) {
@@ -468,8 +502,11 @@ export function createSequencer(root) {
           { 'aria-label': 'Tonlänge in Sechzehnteln', title: 'Tonlänge in Sechzehnteln' }));
       }
       for (const o of inst.options || []) {
-        head.append(select(o.values.map((v) => ({ value: v.id, label: v.label })), row.opts[o.key] ?? o.values[0].id,
-          (v) => { row.opts[o.key] = v; changed(); }, { 'aria-label': o.label, title: o.label }));
+        if (inst.pads && !optionApplies(o, row.pad)) continue;
+        head.append(select(o.values.map((v) => ({ value: v.id, label: v.label })), row.opts[o.key] ?? o.values[0].id, (v) => {
+          row.opts[o.key] = v;
+          if (inst.ranges && o.key === 'preset') { fitRow(row, inst); changed({ rebuild: true }); } else changed();
+        }, { 'aria-label': o.label, title: o.label }));
       }
     }
 

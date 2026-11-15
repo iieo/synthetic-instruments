@@ -61,6 +61,10 @@ export function rangeText(inst) {
   return '';
 }
 
+// The selected preset may play a narrower range than the instrument as a whole.
+export const noteRange = (inst, opts) => (inst.ranges && opts && inst.ranges[opts.preset]) || inst.range;
+export const optionApplies = (o, pad) => !o.pads || o.pads.includes(pad);
+
 export const defaultOpts = (inst) => Object.fromEntries((inst.options || []).map((o) => [o.key, o.values[0].id]));
 
 export function debounce(fn, ms) {

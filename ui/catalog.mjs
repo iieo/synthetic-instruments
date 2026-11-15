@@ -72,9 +72,70 @@ export const CATALOG = {
     desc: 'Ein Kit für Drum\'n\'Bass und Jungle, ganz aus Oszillatoren und Rauschen gebaut. Enge Snare mit Körper, Ghost Notes, Hats und Ride, dazu ein eigenes synkopiertes Two-Step-Pattern.' },
   fx: { title: 'FX', category: 'Elektronisch',
     desc: 'Übergänge für den Drop: Riser, Downlifter, Impact, Snare-Roll, Laser und Sweep. Die Länge folgt dem Tempo in Vierteln, der Klang ist stereo.' },
+
+  'electric-guitar': { title: 'E-Gitarre', category: 'Saiten',
+    labels: { clean: 'Clean', crunch: 'Crunch', lead: 'Lead', muted: 'Abgedämpft' },
+    desc: 'Eine E-Gitarre mit massivem Korpus und Stahlsaiten. Magnetische Tonabnehmer wandeln die Schwingung in Spannung um, ein Röhrenverstärker mit Lautsprecherbox färbt und verzerrt den Ton von glasklar bis stark übersteuert.' },
+  banjo: { title: 'Banjo', category: 'Saiten',
+    labels: { finger: 'Fingerpicks', pick: 'Plektrum', muted: 'Gedämpft' },
+    desc: 'Ein fünfsaitiges Banjo. Der Steg steht auf einem gespannten Fell wie bei einer Trommel, deshalb springt der Ton hell und knackig an und verklingt schnell.' },
+  'string-ensemble': { title: 'Streicherensemble', category: 'Saiten',
+    labels: { legato: 'Legato', staccato: 'Staccato', tremolo: 'Tremolo', pizzicato: 'Pizzicato' },
+    desc: 'Eine Streichergruppe im Orchester mit Violinen, Bratschen und Celli. Jede Stimme ist eine eigene gestrichene Saite mit leicht anderer Stimmung, eigenem Vibrato und eigenem Einsatz, zusammen klingen sie in einem kleinen Konzertsaal.' },
+  saxophone: { title: 'Saxophon', category: 'Blas',
+    labels: { alto: 'Altsaxophon', tenor: 'Tenorsaxophon', soft: 'Subtone (weich)', growl: 'Growl' },
+    desc: 'Ein Saxophon mit einfachem Rohrblatt auf einem konischen Messingrohr. Weil der Kegel wie ein beidseitig offenes Rohr schwingt, hat es alle Obertöne und überbläst in die Oktave, anders als die zylindrische Klarinette.' },
+  oboe: { title: 'Oboe', category: 'Blas',
+    labels: { oboe: 'Oboe', 'english-horn': 'Englischhorn' },
+    desc: 'Eine Oboe mit Doppelrohrblatt auf einer engen, kegelförmigen Bohrung. Die beiden Blätter öffnen und schließen den Luftweg im Takt der Druckwellen im Kegel, deshalb klingen alle Obertöne mit und das Instrument überbläst in die Oktave.' },
+  trombone: { title: 'Posaune', category: 'Blas',
+    labels: { open: 'Offen', mute: 'Gerader Dämpfer', bucket: 'Filzdämpfer' },
+    desc: 'Eine Tenorposaune in B. Die Lippen schwingen als Ventil vor der Luftsäule, und der Zug verlängert das Rohr stufenlos, deshalb kann die Posaune als einziges Blechblasinstrument echte Glissandi spielen.' },
+  tuba: { title: 'Tuba', category: 'Blas',
+    labels: { tuba: 'Tuba', euphonium: 'Euphonium' },
+    desc: 'Eine B-Tuba oder ein Euphonium mit weiter, konischer Bohrung und vier Ventilen. Die großen Lippen schwingen als Ventil vor der langen Luftsäule, der weite Schalltrichter strahlt einen runden, dunklen Ton ab, der auch im Fortissimo kaum schmettert.' },
+  timpani: { title: 'Pauken', category: 'Schlagwerk',
+    labels: { normal: 'Normal', soft: 'Weiche Schlägel', hard: 'Harte Schlägel', roll: 'Wirbel' },
+    desc: 'Konzertpauken mit Fell über einem Kupferkessel. Die Luft über und im Kessel belastet das Fell und rückt seine Eigenschwingungen fast in eine Obertonreihe, deshalb hat die Pauke einen klaren Ton.' },
+  // The gong rings on its own; when the hand damps it is an option, not the note length.
+  gong: { title: 'Gong', category: 'Schlagwerk', ring: true, maxSeconds: 30,
+    labels: { tamtam: 'Tamtam', chau: 'Buckelgong', small: 'Kleiner Gong' },
+    desc: 'Ein großer Tamtam, ein gestimmter Buckelgong und ein kleiner Gong aus gehämmerter Bronze. Nach einem kräftigen Schlag wandert Energie von den tiefen in die hohen Schwingungen, und der Klang blüht zu einem hellen Schimmern auf.' },
+  'music-box': { title: 'Spieluhr', category: 'Schlagwerk', maxSeconds: 8,
+    desc: 'Ein Kamm aus gestimmten Stahlzungen in einem kleinen Holzkasten. Stifte auf einer sich drehenden Walze reißen die Zungen an, die tiefen Zungen tragen Bleigewichte unter der Spitze.' },
+  harpsichord: { title: 'Cembalo', category: 'Tasten',
+    labels: { '8ft': '8 Fuß', '4ft': '4 Fuß', lute: 'Lautenzug', '8ft+8ft': '8 Fuß gekoppelt' },
+    desc: 'Ein Cembalo mit zwei Chören. Ein Kiel zupft die Messing- oder Eisensaite nahe am Ende an, ein dünner Resonanzboden macht den Klang hell, und beim Loslassen legt sich ein Filzdämpfer auf die Saite.' },
+  'tonewheel-organ': { title: 'Drawbar-Orgel', category: 'Tasten',
+    labels: { jazz: 'Jazz', gospel: 'Gospel', rock: 'Rock', ballad: 'Ballade', full: 'Volles Register', clean: 'Trocken' },
+    desc: 'Eine elektromechanische Orgel mit Zugriegeln. Eine Welle treibt Zahnräder an, deren Zähne vor Magnetspulen Sinustöne erzeugen, und ein Lautsprecher mit rotierendem Horn und rotierender Trommel lässt den Klang schweben.' },
+  sitar: { title: 'Sitar', category: 'Welt',
+    desc: 'Eine Langhalslaute mit Kürbiskorpus. Die Saite liegt auf einem breiten, flach gewölbten Steg und streift ihn bei jeder Schwingung, das gibt das helle Schnarren, und darunter klingen gestimmte Resonanzsaiten mit.' },
+  koto: { title: 'Koto', category: 'Welt',
+    labels: { pick: 'Plektrum', silk: 'Seide', finger: 'Finger' },
+    desc: 'Eine lange Wölbbrettzither mit 13 Saiten, gezupft mit Plektren an den Fingern. Jede Saite liegt auf einem beweglichen Steg, und wer sie dahinter niederdrückt, macht den Ton höher, auch während er klingt.' },
+  handpan: { title: 'Handpan', category: 'Welt',
+    labels: { soft: 'Weich', bright: 'Hell', ding: 'Ding (Mittelnote)' },
+    desc: 'Zwei verklebte Stahlschalen, in die oben gestimmte Notenfelder um eine große Mittelnote, das Ding, eingehämmert sind. Mit Fingern angeschlagen klingen in jedem Feld Grundton, Oktave und Duodezime zusammen, und die Luft im Inneren schwingt durch das Loch in der Unterseite mit.' },
+  didgeridoo: { title: 'Didgeridoo', category: 'Welt',
+    labels: { drone: 'Bordun', wow: 'Wow', pulse: 'Atempuls', toot: 'Toot (überblasen)' },
+    desc: 'Ein bis zu zwei Meter langes Holzrohr, meist ein von Termiten ausgehöhlter Eukalyptusstamm. Die Lippen summen im Mundstück einen tiefen Dauerton, den der Spieler mit Zunge, Wangen und Stimme formt und durch Zirkularatmung ohne Pause weiterklingen lässt.' },
+  tabla: { title: 'Tabla', category: 'Welt',
+    labels: { na: 'Na (Rand)', tin: 'Tin (freies Fell)', tun: 'Tun (Mitte, offen)', te: 'Te (Mitte, gedämpft)', ge: 'Ge (Bass offen)',
+      'ge-glide': 'Ge mit Gleiten', ka: 'Ka (Bass flach)', dha: 'Dha (Na und Ge)', dhin: 'Dhin (Tin und Ge)' },
+    desc: 'Ein Trommelpaar aus Nordindien, gespielt mit Fingern und Handballen. Die schwarze Pastenauflage auf dem rechten Fell stimmt seine Obertöne fast harmonisch, auf der großen linken Trommel lässt der Handballen den Bass gleiten.' },
+  cajon: { title: 'Cajon', category: 'Welt',
+    labels: { bass: 'Bass', tone: 'Ton', slap: 'Slap', tip: 'Fingerspitze', ghost: 'Ghost' },
+    desc: 'Eine Kistentrommel aus Holz, auf der man sitzt und mit den Händen spielt. Die vordere Sperrholzplatte schwingt mit der Luft im Kasten und dem Schallloch in der Rückwand, innen liegende Snare-Drähte rasseln gegen die Platte.' },
+  'fm-synth': { title: 'FM-Synthesizer', category: 'Elektronisch',
+    labels: { epiano: 'E-Piano', bell: 'Glocke', bass: 'Bass', brass: 'Bläser', marimba: 'Marimba' },
+    desc: 'Ein Synthesizer, der Sinustöne gegenseitig in der Phase moduliert. Aus vier Operatoren entstehen so glockige, metallische und perkussive Klänge wie das helle E-Piano der Achtziger.' },
+  theremin: { title: 'Theremin', category: 'Elektronisch',
+    labels: { classic: 'Klassisch', scifi: 'Science-Fiction', soft: 'Sanft' },
+    desc: 'Ein elektronisches Instrument, das ohne Berührung gespielt wird. Eine Hand an der Antenne steuert stufenlos die Tonhöhe, die andere die Lautstärke, und der Ton entsteht aus der Schwebung zweier Hochfrequenzoszillatoren.' },
 };
 
-export const CATEGORY_ORDER = ['Tasten', 'Saiten', 'Blas', 'Schlagwerk', 'Elektronisch', 'Sonstiges'];
+export const CATEGORY_ORDER = ['Tasten', 'Saiten', 'Blas', 'Schlagwerk', 'Welt', 'Elektronisch', 'Sonstiges'];
 
 export const PAD_LABELS = {
   kick: 'Kick', snare: 'Snare', rim: 'Rimshot', hihatClosed: 'Hi-Hat zu', hihatOpen: 'Hi-Hat offen',
@@ -107,6 +168,10 @@ const STOP_LABELS = {
   principal8: 'Prinzipal 8\'', gedackt8: 'Gedackt 8\'', octave4: 'Oktave 4\'', superoctave2: 'Superoktave 2\'',
   mixture: 'Mixtur', trumpet8: 'Trompete 8\'', subbass16: 'Subbass 16\'', trombone16: 'Posaune 16\'',
 };
+
+// Choices for numeric parameters. `undefined` lets the instrument take the value from its preset.
+const choices = (key, label, list) => ({ key, label, values: list.map(([value, l]) => ({ id: value === undefined ? 'preset' : String(value), label: l, value })) });
+const FROM_PRESET = 'Preset-Standard';
 
 export const OPTIONS = {
   organ: (meta) => {
@@ -143,4 +208,59 @@ export const OPTIONS = {
     ...['a', 'e', 'i', 'o', 'u'].map((v) => ({ id: v, label: v, value: v })), { id: 'ah-oh', label: 'a nach o', value: 'ah-oh' }] }],
   acid: () => [{ key: 'waveform', label: 'Wellenform', values: [
     { id: 'saw', label: 'Sägezahn', value: 'saw' }, { id: 'square', label: 'Rechteck', value: 'square' }] }],
+  'electric-guitar': () => [
+    choices('pickup', 'Tonabnehmer', [[undefined, FROM_PRESET], ['bridge', 'Steg'], ['middle', 'Mitte'], ['neck', 'Hals'], ['both', 'Steg und Hals']]),
+    choices('drive', 'Gain', [[undefined, FROM_PRESET], [0.2, 'Wenig'], [0.5, 'Mittel'], [0.9, 'Viel']]),
+  ],
+  sitar: () => [
+    choices('scale', 'Resonanzsaiten', [['major', 'Dur'], ['minor', 'Moll'], ['pentatonic', 'Pentatonik']]),
+    choices('meend', 'Meend (Ziehen)', [[0, 'Ohne'], [1, '1 Halbton hoch'], [2, '2 Halbtöne hoch'], [-1, '1 Halbton tief']]),
+  ],
+  banjo: () => [],
+  koto: () => [choices('oshide', 'Drücken (Halbtöne)', [[0, 'Ohne'], [1, '1 Halbton'], [2, '2 Halbtöne']])],
+  saxophone: () => [choices('articulation', 'Artikulation', [['tongue', 'Gestoßen'], ['legato', 'Gebunden']])],
+  oboe: () => [choices('articulation', 'Artikulation', [['tongue', 'Gestoßen'], ['legato', 'Gebunden']])],
+  trombone: () => [],
+  tuba: () => [],
+  'string-ensemble': () => [choices('hall', 'Saal', [[0.35, 'Saal'], [0, 'Trocken'], [0.7, 'Großer Anteil']])],
+  timpani: () => [],
+  gong: () => [choices('duration', 'Abdämpfen', [[8, 'Nach 8 s'], [30, 'Ausklingen lassen'], [3, 'Nach 3 s'], [1, 'Nach 1 s']])],
+  harpsichord: () => [],
+  handpan: () => [choices('strike', 'Anschlag', [['center', 'Mitte'], ['edge', 'Rand'], ['muted', 'Gedämpft']])],
+  didgeridoo: () => [
+    choices('vowel', 'Vokal', [[undefined, FROM_PRESET], [0, 'U (dunkel)'], [0.5, 'O'], [1, 'I (hell)']]),
+    choices('pulse', 'Puls', [[undefined, FROM_PRESET], [0, 'Aus'], [3, '3 Hz'], [6, '6 Hz']]),
+    choices('breathe', 'Zirkularatmung', [[undefined, FROM_PRESET], [0, 'Aus'], [2.8, 'Alle 2,8 s'], [6, 'Alle 6 s']]),
+  ],
+  // midi tunes the right drum (dayan) and glide only bends the ge-glide stroke; `pads` limits each
+  // option to the strokes it changes, so the others are neither re-rendered nor cached per value.
+  tabla: () => [
+    { ...choices('midi', 'Stimmung', [[62, 'D (Standard)'], [57, 'A tief'], [60, 'C'], [64, 'E'], [67, 'G'], [69, 'A hoch']]),
+      pads: ['na', 'tin', 'tun', 'te', 'dha', 'dhin'] },
+    { ...choices('glide', 'Gleiten (Bass)', [[4, 'Steigt 4 Halbtöne (Standard)'], [7, 'Steigt 7 Halbtöne'], [0, 'Ohne'], [-4, 'Fällt 4 Halbtöne'], [-7, 'Fällt 7 Halbtöne']]),
+      pads: ['ge-glide'] },
+  ],
+  cajon: () => [
+    choices('snare', 'Snare-Drähte', [[0.6, 'Normal'], [0, 'Aus'], [0.3, 'Leicht'], [1, 'Locker']]),
+    choices('damping', 'Dämpfung', [[0, 'Offen'], [0.5, 'Halb gedämpft'], [1, 'Gedämpft']]),
+    choices('size', 'Größe', [['standard', 'Standard'], ['small', 'Klein'], ['large', 'Groß']]),
+  ],
+  'tonewheel-organ': () => [
+    choices('registration', 'Zugriegel', [[undefined, FROM_PRESET], ['888000000', 'Grundregister 16\' 5⅓\' 8\''], ['008400000', 'Sanft 8\' 4\''], ['888888888', 'Alle Zugriegel']]),
+    choices('rotor', 'Rotor', [[undefined, FROM_PRESET], ['off', 'Aus'], ['slow', 'Langsam'], ['fast', 'Schnell'], ['slow-fast', 'Langsam nach schnell'], ['fast-slow', 'Schnell nach langsam']]),
+    choices('percussion', 'Perkussion', [[undefined, FROM_PRESET], ['off', 'Aus'], ['2nd', 'Zweite Harmonische'], ['3rd', 'Dritte Harmonische']]),
+  ],
+  'fm-synth': () => [
+    choices('algorithm', 'Algorithmus', [[undefined, FROM_PRESET], ['stack', 'Kette'], ['two-stacks', 'Zwei Ketten'], ['branch', 'Verzweigt'],
+      ['stack-plus', 'Kette plus Einzelton'], ['shared-mod', 'Gemeinsamer Modulator'], ['additive', 'Additiv']]),
+    choices('brightness', 'Helligkeit', [[0.5, 'Normal'], [0.2, 'Weich'], [0.8, 'Hell']]),
+  ],
+  theremin: () => [
+    choices('vibrato', 'Vibrato', [[undefined, FROM_PRESET], [0, 'Aus'], [0.2, 'Leicht'], [0.6, 'Stark']]),
+    choices('swell', 'Anschwellen', [[undefined, FROM_PRESET], [0.03, 'Sofort'], [0.8, 'Langsam']]),
+  ],
+  'music-box': () => [
+    choices('ring', 'Ausklingen bis Dämpfer', [[undefined, 'Frei ausklingen'], [2, 'Nach 2 s'], [1, 'Nach 1 s'], [0.4, 'Nach 0,4 s']]),
+    choices('damper', 'Dämpfergeräusch', [[0.15, 'Normal'], [0, 'Aus'], [0.4, 'Deutlich']]),
+  ],
 };

@@ -1,3 +1,5 @@
+import { optionApplies } from './util.js';
+
 let ctx = null;
 let master = null;
 
@@ -33,13 +35,15 @@ export function unlockAudio() {
 
 export function soundUrl(inst, { midi, pad, velocity = 0.8, duration = 1, bpm, seed = 1, opts = {} }) {
   const q = new URLSearchParams({ inst: inst.id });
-  if (inst.pads) q.set('pad', pad ?? inst.pads[0].id);
+  const padId = inst.pads ? pad ?? inst.pads[0].id : undefined;
+  if (inst.pads) q.set('pad', padId);
   else q.set('midi', String(midi));
   q.set('velocity', String(Math.round(velocity * 100) / 100));
   if (inst.usesDuration) q.set('duration', String(Math.max(0.05, Math.min(10, Math.round(duration * 100) / 100))));
   if (inst.usesBpm && bpm) q.set('bpm', String(Math.round(Math.max(40, Math.min(220, bpm)))));
   q.set('seed', String(seed));
   for (const o of inst.options || []) {
+    if (!optionApplies(o, padId)) continue;
     const v = opts[o.key];
     q.set(`o_${o.key}`, o.values.some((x) => x.id === v) ? v : o.values[0].id);
   }

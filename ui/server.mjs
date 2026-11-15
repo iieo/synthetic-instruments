@@ -89,7 +89,7 @@ async function instrumentVersion(id) {
   return version;
 }
 
-const label = (v) => PAD_LABELS[v] || v;
+const label = (cat, v) => (cat.labels && cat.labels[v]) || PAD_LABELS[v] || v;
 
 function describe(id, version, probe) {
   const cat = CATALOG[id] || {};
@@ -104,22 +104,39 @@ function describe(id, version, probe) {
 
   const options = [];
   if (pitched && presets && presets.length) {
-    options.push({ key: 'preset', label: 'Preset', values: presets.map((p) => ({ id: p, label: label(p), value: p })) });
+    options.push({ key: 'preset', label: 'Preset', values: presets.map((p) => ({ id: p, label: label(cat, p), value: p })) });
   }
-  if (OPTIONS[id]) options.push(...OPTIONS[id](meta));
+  if (OPTIONS[id]) {
+    for (const o of OPTIONS[id](meta)) {
+      // Options scoped to some pads (tabla tuning and glide) only reach the strokes that use them.
+      const { pads: scope, ...rest } = o;
+      options.push(scope && pads ? { ...rest, pads: scope.filter((p) => pads.includes(p)) } : rest);
+    }
+  }
   else {
     for (const [k, v] of Object.entries(meta)) {
-      if (['range', 'voices', 'presets'].includes(k) || !Array.isArray(v) || !v.length) continue;
+      if (['range', 'ranges', 'voices', 'presets'].includes(k) || !Array.isArray(v) || !v.length) continue;
       if (!v.every((x) => typeof x === 'string')) continue;
       options.push({ key: k, label: k, values: v.map((x) => ({ id: x, label: x, value: k.endsWith('s') ? [x] : x })) });
     }
   }
 
+  // Pitched pads (tabla) get their tuning as an option, so only keyboards have a range.
   let range = null;
-  if (pitched) {
+  if (pitched && !pads) {
     const r = Array.isArray(meta.range) && meta.range.length === 2 ? meta.range : cat.range || [36, 84];
     range = [Math.round(Number(r[0])), Math.round(Number(r[1]))];
     if (!range.every(Number.isFinite) || range[0] > range[1]) range = [36, 84];
+  }
+  // Per-preset ranges, clipped to the overall range; presets without an entry use the overall range.
+  let ranges = null;
+  if (range && presets && meta.ranges && typeof meta.ranges === 'object' && !Array.isArray(meta.ranges)) {
+    for (const p of presets) {
+      const r = meta.ranges[p];
+      if (!Array.isArray(r) || r.length !== 2) continue;
+      const lo = Math.max(range[0], Math.round(Number(r[0]))), hi = Math.min(range[1], Math.round(Number(r[1])));
+      if (Number.isFinite(lo) && Number.isFinite(hi) && lo <= hi) (ranges ||= {})[p] = [lo, hi];
+    }
   }
   return {
     id, version, available: true,
@@ -127,10 +144,12 @@ function describe(id, version, probe) {
     category: cat.category || (pads ? 'Schlagwerk' : 'Sonstiges'),
     kind: pads ? (padParam === 'voice' ? 'percussion' : 'preset') : (presets ? 'preset' : 'melodic'),
     pitched,
-    usesDuration: !!probe.usesDuration,
+    usesDuration: !!probe.usesDuration && !cat.ring,
     usesBpm: !!probe.usesBpm,
+    maxSeconds: Number(cat.maxSeconds) || null,
     range,
-    pads: pads && pads.map((p) => ({ id: p, label: label(p) })),
+    ranges,
+    pads: pads && pads.map((p) => ({ id: p, label: label(cat, p) })),
     padParam,
     options,
   };
@@ -248,6 +267,9 @@ function parseNum(q, name, def, lo, hi, int = false) {
   return n;
 }
 
+const rangeFor = (inst, opts) => (inst.ranges && inst.ranges[opts.preset]) || inst.range;
+const optionApplies = (o, pad) => !o.pads || o.pads.includes(pad);
+
 function parseRequest(inst, q) {
   const job = {
     velocity: Math.round(parseNum(q, 'velocity', 0.8, 0, 1) * 1000) / 1000,
@@ -258,22 +280,28 @@ function parseRequest(inst, q) {
     const pad = q.get('pad') || q.get(inst.padParam);
     if (!inst.pads.some((p) => p.id === pad)) throw new HttpError(400, `pad muss einer von ${inst.pads.map((p) => p.id).join(', ')} sein`);
     job.pad = pad;
-  } else {
-    job.midi = parseNum(q, 'midi', NaN, inst.range[0], inst.range[1], true);
-    if (Number.isNaN(job.midi)) throw new HttpError(400, 'midi fehlt');
+  }
+  const allowed = ['inst', 'velocity', 'seed', ...(inst.pads ? ['pad', inst.padParam] : ['midi']),
+    inst.usesDuration && 'duration', inst.usesBpm && 'bpm'];
+  for (const k of q.keys()) {
+    if (allowed.includes(k)) continue;
+    const o = k.startsWith('o_') && inst.options.find((x) => `o_${x.key}` === k);
+    if (!o) throw new HttpError(400, `unbekannter Parameter ${k}`);
+    if (!optionApplies(o, job.pad)) throw new HttpError(400, `${o.key} gilt nur für ${o.pads.join(', ')}`);
   }
   job.duration = inst.usesDuration ? Math.round(parseNum(q, 'duration', 1, 0.05, 10) * 100) / 100 : null;
   job.bpm = inst.usesBpm ? parseNum(q, 'bpm', null, 40, 220, true) : null;
   for (const o of inst.options) {
+    if (!optionApplies(o, job.pad)) continue;
     const raw = q.get(`o_${o.key}`);
     const chosen = raw === null || raw === '' ? o.values[0] : o.values.find((v) => v.id === raw);
     if (!chosen) throw new HttpError(400, `${o.key} muss einer von ${o.values.map((v) => v.id).join(', ')} sein`);
     job.opts[o.key] = chosen.id;
   }
-  for (const k of q.keys()) {
-    if (!['inst', 'midi', 'pad', 'velocity', 'duration', 'seed', inst.padParam, inst.usesBpm && 'bpm'].includes(k) && !(k.startsWith('o_') && inst.options.some((o) => `o_${o.key}` === k))) {
-      throw new HttpError(400, `unbekannter Parameter ${k}`);
-    }
+  if (!inst.pads) {
+    const [lo, hi] = rangeFor(inst, job.opts);
+    job.midi = parseNum(q, 'midi', NaN, lo, hi, true);
+    if (Number.isNaN(job.midi)) throw new HttpError(400, 'midi fehlt');
   }
   return job;
 }
@@ -285,6 +313,7 @@ function renderArgs(inst, { midi, pad, velocity, duration, bpm, seed, opts }) {
   if (duration !== null && duration !== undefined) args.duration = duration;
   if (bpm !== null && bpm !== undefined) args.bpm = bpm;
   for (const o of inst.options) {
+    if (!(o.key in opts)) continue;
     const v = o.values.find((x) => x.id === opts[o.key]);
     if (v) args[o.key] = v.value;
   }
@@ -306,13 +335,17 @@ const peakOf = (chans) => {
 
 // One fixed gain per instrument and option set, taken from reference notes at velocity 0.8,
 // so velocity differences survive and all instruments land near the same level.
+// Pad-scoped options stay at their default here, so they don't change the level of the other pads.
 function referenceGain(inst, opts) {
-  const key = `${inst.id}|${inst.version}|${optsKey(opts)}`;
+  const shared = Object.fromEntries(inst.options.filter((o) => !o.pads && o.key in opts).map((o) => [o.key, opts[o.key]]));
+  const key = `${inst.id}|${inst.version}|${optsKey(shared)}`;
   if (!gains.has(key)) {
+    const [lo, hi] = rangeFor(inst, shared) || [];
+    const padOpts = (pad) => ({ ...shared, ...Object.fromEntries(inst.options.filter((o) => o.pads && o.pads.includes(pad)).map((o) => [o.key, o.values[0].id])) });
     const jobs = inst.pads
-      ? inst.pads.map((p) => ({ pad: p.id }))
-      : [0.25, 0.5, 0.75].map((f) => ({ midi: Math.round(inst.range[0] + f * (inst.range[1] - inst.range[0])) }));
-    const p = Promise.all(jobs.map((j) => rawRender(inst, { velocity: 0.8, seed: 1, duration: inst.usesDuration ? 1 : null, opts, ...j })))
+      ? inst.pads.map((p) => ({ pad: p.id, opts: padOpts(p.id) }))
+      : [0.25, 0.5, 0.75].map((f) => ({ midi: Math.round(lo + f * (hi - lo)), opts: shared }));
+    const p = Promise.all(jobs.map((j) => rawRender(inst, { velocity: 0.8, seed: 1, duration: inst.usesDuration ? 1 : null, ...j })))
       .then((outs) => {
         const peak = Math.max(...outs.map(peakOf));
         return peak > 1e-9 ? Math.min(1000, Math.max(0.001, TARGET_PEAK / peak)) : 1;
@@ -344,7 +377,7 @@ function encodeWav(chans) {
 async function renderWav(inst, job, signal) {
   const [chans, gain] = await Promise.all([rawRender(inst, job, signal), referenceGain(inst, job.opts)]);
   // Tempo-bound sounds (an 8-beat riser at a slow tempo) may run far longer than a drum hit.
-  const maxLen = Math.round(SR * (inst.usesDuration ? job.duration + 5 : inst.usesBpm ? 34 : 6));
+  const maxLen = Math.round(SR * (inst.usesDuration ? job.duration + 5 : inst.usesBpm ? 34 : inst.maxSeconds || 6));
   let n = chans[0].length;
   // Trim trailing silence, cap very long tails with a short fade.
   let last = 0;
