@@ -72,11 +72,11 @@ etwa 1,2 s). Panorama: Hats 0,3 rechts, Ride 0,35 links, Ghosts leicht rechts.
 
 ## Messungen
 
-**Pegel** (40 Seeds, Velocity 1 und 0,6, Tune −4, 0, +4): höchste Spitze −1,3 dBFS (Kick), −1,5
-(Snare), −7,4 (Ghost), −1,5 (Hat), −1,4 (Ride). Kein NaN, Kanten exakt null, Gleichanteil unter
+**Pegel** (40 Seeds, Velocity 1 und 0,6, Tune −12, −4, 0, +4, +12, Decay 0,25 bis 3): höchste
+Spitze −1,2 dBFS (Kick), −1,3 (Snare), −6,6 (Ghost), −1,3 (Hat), −1,4 (Ride). Kein NaN, Kanten exakt null, Gleichanteil unter
 3·10⁻⁴. Größter Sprung 1,29 bei der Hat und 0,87 bei der Ride: beides breitbandiges hohes Rauschen,
 dort sind große Sprünge zwischen benachbarten Samples normal. `renderBreak` bei Velocity 1: höchste
-Spitze −2,2 dBFS.
+Spitze −2,3 dBFS.
 
 **Demo** (`out/breakbeat.wav`): −14,7 LUFS integriert, LRA 4,7 LU, Spitze −1,0 dBFS, True Peak
 −0,7 dBTP, Gleichanteil 9·10⁻⁵, größter Sprung 1,19 (Hats). Linear normalisiert, ohne Limiter.

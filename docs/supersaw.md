@@ -128,9 +128,12 @@ Normalisierung mit einer einzigen linearen Verstärkung auf −1 dBFS Spitze, Tr
 
 ## Messungen
 
-- **Pegel:** Einzelne Noten mit Anschlag 1 von MIDI 36 bis 96 in Dreierschritten, drei Seeds, kurze
-  und lange Noten: höchste Spitze −2,1 dBFS (alle vier Presets zwischen −2,2 und −2,1 dBFS), kein
-  NaN, mittlerer Gleichanteil unter 2e−5.
+- **Pegel:** Einzelne Noten mit Anschlag 1 von MIDI 36 bis 96 in Zweierschritten, drei Seeds, kurze
+  und lange Noten, auch mit `from: -12`: höchste Spitze −1,5 dBFS (`anthem`), −1,9 (`lead`), −2,1
+  (`hardlead`), −2,3 (`pad`). Bei Dreiklängen über `chord` können sich die Sägezähne hoch oben
+  phasengleich treffen, ohne Schutz bis +0,4 dBFS (`lead`, MIDI 90). Deshalb wird eine Note, deren
+  Spitze über −1,2 dBFS läge, als Ganzes linear auf −1,2 dBFS abgesenkt. Höchste Spitze damit
+  −1,2 dBFS. Kein NaN, mittlerer Gleichanteil unter 2e−5.
 - **Ränder:** erstes und letztes Sample jeder Note exakt null, größter Sprung in den ersten fünf
   Samples 1,5e−5.
 - **Aliasing:** Lead und Hardstyle-Lead mit einem Bend über drei Oktaven bis 2,1 kHz Grundton, der

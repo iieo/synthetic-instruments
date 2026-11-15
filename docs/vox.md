@@ -134,10 +134,12 @@ Normalisierung mit einer einzigen linearen Verstärkung auf −1 dBFS Spitze, Tr
 
 ## Messungen
 
-- **Pegel:** einzelne Noten mit Anschlag 1 von MIDI 45 bis 88 in Dreierschritten, alle sechs Vokale,
-  drei Seeds, kurz und lang: höchste Spitze −1,9 dBFS (`lead`), `pitched` −2,0 dBFS, `choir`
-  −2,3 dBFS (über zwölf Seeds geprüft, weil sich die sechs Stimmen zufällig überlagern). Kein NaN,
-  Gleichanteil unter 3e−6.
+- **Pegel:** einzelne Noten mit Anschlag 1 von MIDI 45 bis 88 in Zweierschritten, alle sechs Vokale,
+  drei Seeds: höchste Spitze −1,7 dBFS (`lead`, `ah-oh`), `pitched` −2,6 dBFS, `choir` −3,4 dBFS.
+  Beim Vokal a kann ein Teilton genau auf dem ersten Formanten (800 Hz) liegen, dann ist die
+  Spitze deutlich höher als bei den anderen Vokalen. Deshalb ist a um 1,2 dB leiser abgeglichen.
+  Wird eine Note trotzdem lauter als −1,2 dBFS (selten, etwa bei bestimmten Seeds), wird sie als
+  Ganzes linear auf −1,2 dBFS abgesenkt. Kein NaN, Gleichanteil unter 3e−6.
 - **Ränder:** erstes und letztes Sample exakt null, größter Sprung in den ersten fünf Samples 1,4e−7.
 - **Aliasing:** `pitched` mit einem Bend über drei Oktaven bis 1,3 kHz Grundton. Oberhalb von 18 kHz
   ist das Spektrogramm leer, es gibt keine gespiegelten Teiltöne. Das folgt schon aus der Bauart
