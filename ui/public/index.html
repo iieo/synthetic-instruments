@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Synthetische Instrumente</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23181b20'/%3E%3Cpath d='M2 9h2l1.5-5 2.5 9 2-7 1.5 3H14' fill='none' stroke='%23e8a64a' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path d="M1 9h2.5l1.5-5 2.5 9 2-7 1.5 3H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <span>Synthetische Instrumente</span>
+    </div>
+    <nav class="tabs" aria-label="Ansichten">
+      <a href="#instrumente" data-tab="instrumente">Instrumente</a>
+      <a href="#keyboard" data-tab="keyboard">Keyboard</a>
+      <a href="#sequencer" data-tab="sequencer">Sequencer</a>
+    </nav>
+  </header>
+  <main>
+    <div id="status" class="loading-note">Lade Instrumente …</div>
+    <section id="view-instrumente" class="view" hidden></section>
+    <section id="view-keyboard" class="view" hidden></section>
+    <section id="view-sequencer" class="view" hidden></section>
+  </main>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

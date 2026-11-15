@@ -1,0 +1,15 @@
+{
+  "name": "synthetic-instruments",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Musikinstrumente, von Grund auf aus Physik synthetisiert, ohne Samples.",
+  "scripts": {
+    "start": "node ui/server.mjs",
+    "demos": "node ui/run-demos.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
