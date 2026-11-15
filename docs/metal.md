@@ -32,12 +32,18 @@ Das Ergebnis ist ein mono `Float64Array` mit Ausklang. Es beginnt und endet bei 
 Einblendung über 8 Samples, Ausblendung mit Raised Cosine).
 
 Pegel: Je Stimme gibt es eine Pegelkurve über size. Sie ist an neun Stützstellen zwischen 0,5 und 2
-gemessen, jeweils als lautester von 100 Seeds bei velocity 1, und so gesetzt, dass dieser Fall bei
-−3 dBFS liegt. Dazwischen wird in log(size) interpoliert. Ein kleines Objekt ist leichter und wird
-vom gleichen Hammer viel weiter ausgelenkt, ohne die Kurve läge das Rohr bei size 0,5 um 15 dB
+und fünf Zwischenwerten gemessen, jeweils als lautester von 200 Seeds bei velocity 0,2, 0,6 und 1,
+und so gesetzt, dass dieser Fall bei −3 dBFS liegt. Dazwischen wird in log(size) interpoliert. Das
+Blech hat einzelne Seeds mit kurzen Spitzen aus der Energiekaskade. Sein typischer Schlag liegt
+deshalb deutlich tiefer: bei size 1 und velocity 1 im Median bei −10 dBFS, 90 % der Seeds unter
+−8,6 dBFS. Ein kleines Objekt ist leichter und wird vom gleichen Hammer viel weiter ausgelenkt, ohne die Kurve läge das Rohr bei size 0,5 um 15 dB
 höher als bei size 1. Weniger Dämpfung als 1 lässt Amboss, Rohr, Kette und Schaben etwas lauter
-aufbauen; dafür gibt es einen kleinen Abschlag (damping^0,15 bis damping^0,4). Die Kurve ist als
-`trimDb(voice, size)` exportiert.
+aufbauen, das Blech zeigt öfter Spitzen. Dafür gibt es unter damping 1 einen kleinen Abschlag
+(damping^0,15 bis damping^0,4). Die Kurve ist als `trimDb(voice, size)` exportiert.
+
+Prüfung mit frischen Seeds (201 bis 300, 28 840 Renderings über alle Stimmen, 14 Größen, velocity
+0,2/0,6/1, damping 0,5/1/4): keine ungültigen Werte, erstes und letztes Sample immer null, lautester
+Fall −1,5 dBFS (Blech, size 0,5), alle übrigen Stimmen zwischen −2,1 und −3,5 dBFS.
 
 ## Gemeinsamer Kern: Modalbank
 
@@ -232,9 +238,9 @@ jede Stimme allein, dann acht Takte bei 145 BPM:
 Tonhöhe wird nur nach unten verschoben (langsamer lesen mit kubischer Hermite-Interpolation), so
 kann nichts zurückfalten. Gates haben Raised-Cosine-Rampen. Normalisiert auf −1 dBFS.
 
-Messwerte der Demo: Spitze −1,0 dBFS, True Peak −1,0 dBTP (ffmpeg ebur128), −17,5 LUFS
+Messwerte der Demo: Spitze −1,0 dBFS, True Peak −0,9 dBTP (ffmpeg ebur128), −17,3 LUFS
 integriert, DC unter 10⁻⁵, erstes und letztes Sample null. Der größte Sprung von Sample zu Sample
-liegt bei 0,38. Das ist kein Knacken: Er sitzt im Anschlag des Ambosses, in einer glatten
+liegt bei 0,40. Das ist kein Knacken: Er sitzt im Anschlag des Ambosses, in einer glatten
 Schwingung um 5 kHz. Eine Sinusschwingung der Amplitude A bei 5 kHz springt bis 0,64·A pro Sample.
 
 ## Grenzen

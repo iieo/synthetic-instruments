@@ -57,9 +57,10 @@ Triggerimpuls anstößt. Das Modell ist genau das: ein Bandpass mit `Q = π f T6
 von einem Halbsinus-Impuls von 0,25 bis 1 ms. Die Impulsbreite bestimmt, wie viel Höhen der Anschlag
 hat. Mit `k = 1/Q` skaliert schwingt der Bandpass nach einem Impuls mit einer Amplitude proportional
 zu `1 / T60` aus, ein kurzes `decay` wäre also viel lauter. Deshalb wird die Ausgabe zusätzlich mit
-`T60 / T60_Standard` multipliziert. So bleibt die Spitze von Rim und Perc über den ganzen
-`decay`-Bereich fast gleich, beim Standardwert ändert sich nichts. Für den Tonhöhenabfall läuft die Grenzfrequenz exponentiell von `f (1 + sweep)` nach `f`, so wie
-eine Hüllkurve, die den Widerstand im T-Glied moduliert.
+`T60 / T60_Standard` multipliziert. So ändert sich die Spitze von Perc zwischen `decay` 0,05 und 4 s
+um weniger als 1,5 dB, beim Standardwert ändert sich nichts. Für den Tonhöhenabfall läuft die
+Grenzfrequenz exponentiell von `f (1 + sweep)` nach `f`, so wie eine Hüllkurve, die den Widerstand im
+T-Glied moduliert.
 
 **Oszillatorbank.** Rechteck- bzw. Pulsoszillatoren mit PolyBLEP-Kanten, erzeugt mit 192 kHz und
 über ein Kaiser-Fenster-Sinc-Filter (287 Abgriffe, Durchlass bis 20 kHz, ab 24 kHz etwa −90 dB) auf
@@ -74,8 +75,9 @@ Siliziumdioden nach Masse:
 Gelöst mit implizitem Euler und Newton-Schritten bei 4-facher Überabtastung, damit die steife
 Exponentialfunktion stabil bleibt. Die Eingangsspannung ist `0,15 + 6 drive²` Volt je Einheit. Danach
 Dezimation über dasselbe Sinc-Filter und eine Aufholverstärkung aus der statischen Kennlinie: Ein
-Eingang von 0,5 kommt wieder mit 0,5 heraus. `drive` ändert also die Form, kaum die Spitze. Leise
-Schläge werden dabei angehoben, mit viel `drive` klingen auch kleine Velocities fast so laut wie volle. Es gibt
+Eingang von 0,5 kommt wieder mit 0,5 heraus. `drive` ändert also die Form, kaum die Spitze. Weil der
+Begrenzer laute Schläge stärker drückt als leise, schrumpft der Velocity-Bereich: Bei `drive` 1 liegt
+ein Schlag mit Velocity 0,2 nur 6 bis 9 dB unter einem vollen, ohne `drive` sind es 21 dB. Es gibt
 keinen Limiter und kein `tanh` auf dem Summenbus, der Begrenzer sitzt nur in der einzelnen Stimme.
 
 ## Stimmen

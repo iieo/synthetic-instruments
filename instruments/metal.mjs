@@ -111,19 +111,19 @@ function barrel({ velocity, size, damping, rand }) {
 const CAL = { anvil: 0.35, pipe: 0.13, sheet: 0.033, barrel: 0.032, chain: 0.022, scrape: 12 };
 export const RANGE = { size: [0.5, 2], damping: [0.5, 4], duration: [0.1, 4] };
 
-// Level trim in dB over size, measured as the loudest of 100 seeds at velocity 1 and set so that
-// this worst case lands at -3 dBFS. Interpolated linearly in log(size).
+// Level trim in dB over size, set so that the loudest of 200 seeds (velocities 0.2, 0.6, 1) lands
+// at -3 dBFS, at these sizes and between them. Interpolated linearly in log(size).
 const SIZES = [0.5, 0.6, 0.7, 0.85, 1, 1.2, 1.4, 1.7, 2];
 const TRIM = {
-  anvil: [-8.8, -6.9, -5.6, -2.6, -0.5, 2.5, 4.2, 6.5, 8.5],
-  pipe: [-15.2, -10.5, -6.9, -2.8, -0.7, 1.9, 4.3, 7.9, 11.0],
-  sheet: [-15.1, -14.1, -7.8, -6.5, -2.0, 1.6, 4.5, 8.8, 12.0],
-  barrel: [-14.9, -10.6, -7.9, -4.3, -1.0, 3.2, 6.8, 11.7, 16.1],
-  chain: [2.6, 0.9, 1.8, 0.3, -0.5, -1.6, -1.7, -2.9, -3.6],
-  scrape: [-14.2, -9.9, -7.9, -6.1, -1.7, 3.0, 6.4, 10.8, 14.2],
+  anvil: [-8.9, -7.1, -5.9, -3.3, -1.2, 2.3, 3.6, 6.5, 8.5],
+  pipe: [-15.2, -10.5, -6.9, -3.2, -1.0, 1.4, 3.6, 7.1, 10.3],
+  sheet: [-16.0, -14.9, -8.0, -6.7, -5.7, -0.9, 2.6, 8.1, 12.0],
+  barrel: [-15.0, -10.8, -8.0, -4.3, -1.0, 3.2, 6.6, 11.4, 15.6],
+  chain: [2.6, 0.9, 1.0, -0.9, -0.6, -1.6, -2.6, -5.1, -5.3],
+  scrape: [-14.2, -9.9, -8.4, -6.6, -2.6, 3.0, 6.4, 10.7, 13.8],
 };
 // Less damping rings longer and builds up a little more; exponent on damping below 1.
-const DAMP_EXP = { anvil: 0.25, pipe: 0.15, sheet: 0, barrel: 0, chain: 0.2, scrape: 0.4 };
+const DAMP_EXP = { anvil: 0.25, pipe: 0.15, sheet: 0.15, barrel: 0, chain: 0.2, scrape: 0.4 };
 
 export function trimDb(voice, size) {
   const t = TRIM[voice], x = Math.log(size);
