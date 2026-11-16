@@ -187,28 +187,32 @@ laufen in ganzzahligen Perioden und klingen deshalb in der Höhe gestuft.
 
 ## Pegel und Messung
 
-Jedes Preset hat eine feste Verstärkung, kalibriert über alle Presets, alle Vokale, `rough` 0, 1 und
-Standard, `bend` −12, 0 und 12, jeden zweiten Halbton, Velocity 0,2, 0,6 und 1 und mehrere Seeds
-(26 950 Noten):
+Jedes Preset hat eine feste Verstärkung, kalibriert mit zufälligen Kombinationen aus allen
+Optionen: Tonhöhe stufenlos von 36 bis 72, Velocity 0,2 bis 1, Dauer von einem Rahmen bis 15 s,
+jeder Vokal, `rough` und `bend` über den ganzen Bereich samt Grenzen, ganze und gebrochene Seeds
+(28 000 Noten, 5200 davon für `choir` und `vocoder`):
 
 | Preset | Verstärkung | lautester Wert (dBFS) |
 | --- | --- | --- |
-| `aah`, `ooh`, `eee` | 1,07 | −1,49 |
-| `robot` | 1,07 | −1,49 |
-| `choir` | 0,34 | −1,78 |
-| `vocoder` | 0,76 | −1,54 |
-| `ba` | 1,06 | −1,57 |
-| `da` | 0,96 | −1,62 |
-| `ka` | 1,07 | −1,49 |
-| `sa` | 0,97 | −1,57 |
+| `aah`, `ooh`, `eee` | 0,95 | −2,04 |
+| `robot` | 0,95 | −2,06 |
+| `choir` | 0,29 | −2,38 |
+| `vocoder` | 0,53 | −3,17 |
+| `ba`, `ka`, `sa` | 0,95 | −2,06 |
+| `da` | 0,95 | −2,04 |
 
-Keine Note erreicht die Grenze des DAC (null begrenzte Samples im ganzen Durchlauf), kein NaN,
-erstes und letztes Sample immer null, größter Gleichanteil 1,5·10⁻¹¹, größter Sprung zwischen zwei
-Samples 0,49 (eine Stufe des 8-Bit-Signals nach dem Halteglied). Gerechnet wird etwa 200-mal
+Ein einzelner Chip kommt nie über etwa −2 dBFS. `choir` mischt vier Chips, `vocoder` zwei, und
+ihre Spitzen hängen davon ab, wie die Chips zufällig zusammenfallen. Deshalb sind ihre
+Verstärkungen so gewählt, dass sie selbst dann unter −1 dBFS blieben, wenn alle Chips im selben
+Sample ihren lautesten Wert erreichten.
+
+Keine Note erreicht die Grenze des DAC (null begrenzte Samples in 6000 nachgezählten Noten), kein
+NaN, erstes und letztes Sample immer null, größter Gleichanteil 1,7·10⁻¹², größter Sprung zwischen zwei
+Samples 0,39 (eine Stufe des 8-Bit-Signals nach dem Halteglied). Gerechnet wird etwa 200-mal
 schneller als Echtzeit.
 
 Kein Begrenzer und keine Normalisierung pro Note. Das Ende jeder Note bekommt 4 ms Ausblendung.
 
 Demo: `node demos/speech-chip.mjs` schreibt `out/speech-chip.wav` (27 s, stereo): ein monotoner
 Roboterpuls, eine Silbenfigur aus `da`, `ba` und `ka` mit `sa` als Akzent, Chorakkorde aus je drei
-Noten, eine gesungene Melodie und eine helle Antwort mit `vocoder`. Eine lineare Verstärkung auf −1 dBFS Spitze, −16,0 LUFS integriert, True Peak −1,0 dBTP.
+Noten, eine gesungene Melodie und eine helle Antwort mit `vocoder`. Eine lineare Verstärkung auf −1 dBFS Spitze, −16,5 LUFS integriert, True Peak −1,0 dBTP.

@@ -52,9 +52,11 @@ add(64, 'organ', 62, 0.6, 2, 0.3);
 add(64, 'bass', 31, 1, 2, 0.7);
 
 const t0 = performance.now();
-const total = 66 * beat + 3;
+// The file ends where the last release has died away, so it closes exactly at zero.
+const rendered = notes.map((n, i) => render({ ...n.opts, seed: i + 1 }));
+const total = Math.max(...notes.map((n, i) => Math.round(n.t * SR) + rendered[i].length)) / SR;
 const [mono] = buffer(total);
-notes.forEach((n, i) => mixInto(mono, render({ ...n.opts, seed: i + 1 }), Math.round(n.t * SR), n.gain));
+notes.forEach((n, i) => mixInto(mono, rendered[i], Math.round(n.t * SR), n.gain));
 normalizePeak([mono], -1);
 writeWav(outPath('fm-chip.wav'), [mono]);
 console.log(`${notes.length} notes, ${total.toFixed(1)} s, rendered in ${((performance.now() - t0) / 1000).toFixed(1)} s`);

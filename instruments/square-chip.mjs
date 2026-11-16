@@ -10,10 +10,11 @@ export const meta = {
 };
 
 // Fixed output gain per preset, calibrated over range, options, velocities and seeds so the
-// loudest note at velocity 1 peaks near -1.5 dBFS.
+// loudest note peaks near -1.5 dBFS; the noise presets near -2 dBFS, since their peak depends on
+// the seed (500 seeds checked).
 const GAIN = {
   square: 0.8, 'echo-lead': 0.8, arp: 0.8, 'buzz-saw': 0.8, 'buzz-tri': 0.8, 'env-pluck': 0.79,
-  'noise-hat': 0.73, 'noise-snare': 0.52, kick: 0.52,
+  'noise-hat': 0.65, 'noise-snare': 0.47, kick: 0.52,
 };
 
 const PAD = HALF + 8;
@@ -35,11 +36,11 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'square', vibrato, envelopeShape, arp = 'major',
 } = {}) {
   if (preset == null) preset = 'square';
-  const P = PRESETS[preset];
+  const P = typeof preset === 'string' && Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`square-chip: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (arp == null) arp = 'major';
-  if (!CHORDS[arp]) throw new Error(`square-chip: arp must be one of ${meta.arp.join(', ')}, got ${arp}`);
-  if (envelopeShape != null && !(envelopeShape in SHAPES)) {
+  if (typeof arp !== 'string' || !Object.hasOwn(CHORDS, arp)) throw new Error(`square-chip: arp must be one of ${meta.arp.join(', ')}, got ${arp}`);
+  if (envelopeShape != null && (typeof envelopeShape !== 'string' || !Object.hasOwn(SHAPES, envelopeShape))) {
     throw new Error(`square-chip: envelopeShape must be one of ${meta.envelopeShape.join(', ')}, got ${envelopeShape}`);
   }
   const shape = envelopeShape ?? P.shape ?? 'decay';

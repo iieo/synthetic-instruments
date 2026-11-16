@@ -33,7 +33,7 @@ for (const m of [65, 69, 72, 77]) add(64, 'fantasy', m, 3, 0.3, { sustain: 'on' 
 const t0 = performance.now();
 const total = 16 * bar + 3;
 const [mono] = buffer(total);
-mixInto(mono, renderRhythm({ pattern: 'rock', bpm: BPM, bars: 16, seed: 3 }), 0, 0.8);
+mixInto(mono, renderRhythm({ pattern: 'rock', bpm: BPM, bars: 16, seed: 3 }), 0, 0.93);
 notes.forEach((n, i) => mixInto(mono, render({ ...n.opts, seed: i + 1 }), Math.round(n.t * SR), n.gain));
 normalizePeak([mono], -1);
 writeWav(outPath('toy-keyboard.wav'), [mono]);

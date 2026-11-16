@@ -33,6 +33,10 @@ const VOICE = {
   rim: { len: 0.08, gain: 0.345 },
 };
 
+// Overall level of the rhythm box: with hits overlapping, the loudest pattern over all tempos and
+// seeds peaks near -2 dBFS.
+const MIX = 0.86;
+
 const PAD = HALF + 2;
 
 function lfsr17(state) {
@@ -112,7 +116,7 @@ function num(name, v, def, lo, hi) {
 
 export function renderRhythm({ pattern = 'rock', bpm = 120, bars = 2, seed = 1 } = {}) {
   if (pattern == null) pattern = 'rock';
-  const P = PATTERNS[pattern];
+  const P = typeof pattern === 'string' && Object.hasOwn(PATTERNS, pattern) ? PATTERNS[pattern] : null;
   if (!P) throw new Error(`toy-keyboard: unknown pattern ${pattern}, use one of ${Object.keys(PATTERNS).join(', ')}`);
   bpm = num('bpm', bpm, 120, 60, 200);
   bars = Math.round(num('bars', bars, 2, 1, 16));
@@ -123,7 +127,7 @@ export function renderRhythm({ pattern = 'rock', bpm = 120, bars = 2, seed = 1 }
     for (const kind of ['kick', 'snare', 'hat', 'rim']) {
       const row = P[kind], c = row[i % row.length];
       if (c === '.') continue;
-      mixInto(out, hit(kind, c === 'X', noteSeed(seed, [i], kind)), Math.round(i * stepSec * SR));
+      mixInto(out, hit(kind, c === 'X', noteSeed(seed, [i], kind)), Math.round(i * stepSec * SR), MIX);
     }
   }
   return out;

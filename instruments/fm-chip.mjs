@@ -9,11 +9,12 @@ export const meta = { name: 'FM-Soundkarte', range: [24, 96], presets: Object.ke
 // seeds peaks near -2 dBFS.
 const GAIN = {
   piano: 0.658, organ: 0.434, brass: 0.449, bass: 0.562, strings: 0.31, bell: 0.637, guitar: 0.555,
-  'drum-kick': 0.531, 'drum-snare': 0.607, 'drum-hat': 0.598,
+  'drum-kick': 0.531, 'drum-snare': 0.58, 'drum-hat': 0.598,
 };
 
 const ATTACK = 0, DECAY = 1, SUSTAIN = 2, RELEASE = 3;
-const VIB_STEPS = [0, 1, 2, 1, 0, -1, -2, -1];
+// Vibrato shape in eighths of a cycle: 0, half, full, half, 0 and the same negative.
+const VIB_SHAPE = [0, 1, 2, 1, 0, -1, -2, -1];
 const TREM_PERIOD = 13440, PAD = 24, TIMER_HZ = 70;
 // An operator is silent once its attenuation reaches 384 steps (72 dB); tremolo can lift it by 26.
 const SILENT = 410;
@@ -22,6 +23,21 @@ function num(name, v, def, lo, hi) {
   if (v === undefined || v === null) return def;
   if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error(`fm-chip: ${name} must be a finite number, got ${v}`);
   return clamp(v, lo, hi);
+}
+
+// Rhythm voices do not read their phase from the counter. The snare sits on one of the four
+// quarter points of the sine: a tone bit of its own counter picks the half cycle, and inside it the
+// noise bit chooses between the peak and the zero crossing. The hi-hat takes its sign from two bit
+// pairs of two counters that disagree, and the noise bit picks a loud or a soft point of the
+// first quarter (13/16 or 3/16 of it).
+const differ = (p, a, b) => ((p >> a) ^ (p >> b)) & 1;
+function rhythmPhase(kind, p1, p2, noise) {
+  if (kind === 'snare') {
+    const quarter = (p1 >> 8) & 1 ? 2 + noise : 1 - noise;
+    return quarter << 8;
+  }
+  const negative = differ(p1, 7, 2) | differ(p2, 5, 3);
+  return (negative << 9) | ((noise ? 13 : 3) << 4);
 }
 
 class Op {
@@ -69,12 +85,12 @@ class Op {
 
 /**
  * One note on the modelled two-operator FM chip. `brightness` (0..1, default 0.5) moves the
- * modulator's total level by +-9 dB, `waveform` replaces the carrier's waveform with one of
- * sine, half, abs, quarter. Drums use midi as their tuning and ignore `duration`.
+ * modulator level from -9 dB (0, darker) to +9 dB (1, brighter), `waveform` replaces the
+ * carrier's waveform with one of sine, half, abs, quarter. Drums use midi as their tuning and ignore `duration`.
  */
 export function render({ midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'piano', brightness = 0.5, waveform } = {}) {
   if (preset == null) preset = 'piano';
-  const P = PRESETS[preset];
+  const P = Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`fm-chip: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (waveform != null && !WAVES.includes(waveform)) throw new Error(`fm-chip: waveform must be one of ${WAVES.join(', ')}, got ${waveform}`);
   midi = Math.round(num('midi', midi, 60, ...meta.range));
@@ -126,18 +142,15 @@ export function render({ midi = 60, velocity = 0.8, duration = 0.5, seed = 1, pr
     let sum = 0, live = false;
     for (const v of voices) {
       const { car, mod } = v;
-      const vstep = VIB_STEPS[vibCnt >> 10] * (v.fnum >> deep);
+      const depth = v.fnum >> deep, sh = VIB_SHAPE[vibCnt >> 10];
+      const vstep = Math.sign(sh) * (Math.abs(sh) === 2 ? depth : depth >> 1);
       car.env(cnt, keyOn);
       const ca = Math.min(511, car.att + car.tl + car.ksl + (car.p.am ? trem : 0));
       if (car.att + car.tl + car.ksl < SILENT || car.stage === ATTACK) live = true;
       let out;
       if (P.rhythm === 'snare' || P.rhythm === 'hat') {
         car.step(v.fnum); aux.step(tone2.fnum);
-        const p1 = car.acc >> 10, p2 = aux.acc >> 10;
-        let ph;
-        if (P.rhythm === 'snare') ph = ((p1 & 256) ? 0x200 : 0x100) ^ (nb << 8);
-        else ph = ((((p1 >> 7) ^ (p1 >> 2)) | ((p2 >> 5) ^ (p2 >> 3))) & 1 ? 0x200 : 0) | (nb ? 0xd0 : 0x30);
-        out = opOut(ph, ca, car.p.ws);
+        out = opOut(rhythmPhase(P.rhythm, car.acc >> 10, aux.acc >> 10, nb), ca, car.p.ws);
       } else {
         mod.env(cnt, keyOn);
         const ma = Math.min(511, mod.att + mod.tl + mod.ksl + (mod.p.am ? trem : 0));

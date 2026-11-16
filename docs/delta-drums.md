@@ -172,21 +172,26 @@ Parameters, Zahlen außerhalb des Bereichs werden begrenzt.
 
 ## Pegel
 
-Niedrige Raten verlieren durch die Steigungsgrenze bis zu 10 dB. Eine feste Tabelle hebt jede Rate
-um den Median dieses Verlusts über alle Stimmen an (Rate 0 um 9,8 dB, Rate 15 um 0 dB). Danach
-hat jede Stimme einen festen Pegel, eingemessen über alle 16 Raten, fünf Stimmungen und sechs
-Seeds bei Anschlag 1, Ziel −1,5 dBFS. Es gibt keinen Begrenzer.
+Niedrige Raten verlieren durch die Steigungsgrenze bis zu 14 dB. Eine feste Tabelle hebt jede Rate
+um den Median dieses Verlusts über alle Stimmen an (Rate 0 um 9,5 dB, Rate 15 um 0 dB). Danach
+hat jede Stimme einen festen Pegel, eingemessen über alle 16 Raten, jede Stimmung, die bei der
+jeweiligen Rate eine andere Abspielrate ergibt, Anschlag 0,2 bis 1 in Schritten von 0,1 und 200
+Seeds, ganze und gebrochene. Ziel ist −2 dBFS für den lautesten Schlag. Der Pegel steigt nicht
+überall mit dem Anschlag: Bei `crash` und `clap` liegt der lauteste Schlag bei Anschlag 0,9 und
+0,8, denn die Steigungsgrenze formt die Spitzen je nach Anschlag anders. Es gibt keinen
+Begrenzer.
 
 ## Messwerte
 
-Durchlauf mit allen Stimmen, Raten 0, 3, 7, 11 und 15, `tune` −12, 0 und 12, Anschlag 0,2, 0,6 und
-1, Seeds 1, 2 und 3,5 (1215 Töne):
+Eichlauf wie oben beschrieben (2 365 200 Schläge) und ein Kontrolllauf mit 30 neuen Seeds
+(354 780 Schläge):
 
-- Lautester Ton bei Anschlag 1: −1,48 dBFS (`shout`, Rate 15).
-- Größter Sprung von Sample zu Sample: 0,18 (`crash` bei Rate 0, um eine Oktave hoch gespielt).
+- Lautester Schlag: −1,96 dBFS im Eichlauf (`clap`, Rate 1, Anschlag 0,8), −2,02 dBFS im
+  Kontrolllauf (`kick`, Rate 7). Alle Stimmen liegen im Eichlauf zwischen −1,96 und −2,04 dBFS.
+- Größter Sprung von Sample zu Sample: 0,13 (`crash` bei Rate 0, um eine Oktave hoch gespielt).
 - Keine NaN, erstes und letztes Sample jedes Tons exakt 0, Gleichanteil unter 10⁻⁷.
 - Gleicher Seed ergibt bitgleiche Ausgabe, Seed 4,5 klingt anders als Seed 4.
-- Rechenzeit: 0,8 % der Klangdauer, ein Becken bei Rate 15 braucht etwa 50 ms.
+- Rechenzeit: 0,3 bis 0,8 % der Klangdauer, ein Becken bei Rate 15 braucht etwa 50 ms.
 - Spektrogramme über alle Raten zeigen Spiegelbilder nur um Vielfache der Kanalrate und die
   Linie bei f_s / 2, beides vom Kanal selbst. Fallende Linien durch Rückfaltung bei 48 kHz gibt es
   nicht.
@@ -195,4 +200,4 @@ Die Demo `demos/delta-drums.mjs` spielt jede Stimme erst sauber bei Rate 15, dan
 danach acht Takte Groove bei 112 BPM: vier Takte bei Rate 12, vier bei Rate 4. Der Slap-Bass
 antwortet auf demselben Kanal, seine Töne kommen aus `tune` entlang der pentatonischen Leiter.
 Weil die Konsole nur einen Delta-Kanal hat, schneidet jeder Schlag den vorigen ab. Länge 29 s,
-−16,1 LUFS, Spitze −1,0 dBFS, True Peak −1,0 dBTP.
+−16,5 LUFS, Spitze −1,0 dBFS, True Peak −1,0 dBTP.

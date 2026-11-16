@@ -80,7 +80,10 @@ mit der Vorhersage überein.
 ## Abspieler
 
 Wie ein Tracker ändert das Instrument Lautstärke und Periode nur einmal pro Bildwechsel, also mit
-50 Hz. Wo der Takt dieses Rasters zum Notenanfang steht, kommt aus dem Seed.
+50 Hz. Wo der Takt dieses Rasters zum Notenanfang steht, kommt aus dem Seed. Ebenso der Stand des
+Periodenzählers im Kanal: Er läuft frei, deshalb kommt das erste Byte irgendwo innerhalb einer
+Periode nach dem Anschlag. Damit klingt auch jedes Einmal-Sample je nach Seed etwas anders, denn
+alle Treppenstufen liegen um denselben Bruchteil verschoben zum 48-kHz-Raster.
 
 - **Loslassen:** Ab dem ersten Tick nach `duration` sinkt v pro Tick um einen festen Wert je Preset
   (3 bis 8). Das gibt die gestufte Lautstärkerampe eines Volume Slide. Einmal-Samples enden
@@ -97,7 +100,7 @@ Wie ein Tracker ändert das Instrument Lautstärke und Periode nur einmal pro Bi
 | `bass` | 448 | letzter Zyklus, 64 | 64 | sechs Zyklen mit fallender Filterkante und Resonanzbuckel, dann ein weicher Grundtonzyklus |
 | `strings` | 6144 | 3072 | 64 | drei Sägezähne in einer Schleife, die 47, 48 und 49 Zyklen lang laufen; die Schwebung wiederholt sich genau an der Nahtstelle. Davor dieselbe Schleife eingeblendet als Anschwellen |
 | `choir` | 10 240 | 5120 | 128 | wie `strings`, aber mit Formanten eines „a“ (730, 1090, 2440, 3400 Hz), die in jeder Oktavkopie an ihrem Platz bleiben |
-| `piano` | 26 518 | keine | 63,4 | Saitenteiltöne mit Inharmonizität B = 0,00035, Anschlagkerbe bei 1/7,3 der Saite, Teiltöne klingen umso schneller ab, je höher sie liegen |
+| `piano` | 26 519 | keine | 63,4 | Saitenteiltöne mit Inharmonizität B = 0,00035, Anschlagkerbe bei 1/7,3 der Saite, Teiltöne klingen umso schneller ab, je höher sie liegen |
 | `lead` | 64 | 64 | 64 | Puls mit 25 % Tastgrad, oben leicht abgerundet, mit Vibrato |
 | `chip` | 32 | 32 | 32 | vier Stufen (+0,8, +0,3, −0,8, −0,3), roh ohne Glättung |
 | `orchestra-hit` | 14 088 | keine | 63,4 | Akkord aus sechs Sägezähnen (Unteroktave, Grundton, Quinte, Oktave, Dezime, Duodezime) mit kurzem Tonhöhenknick und Rauschstoß |
@@ -131,7 +134,7 @@ Alle Filter sind trapezförmig diskretisiert. Der feste Tiefpass dämpft die Spi
 | `preset` | `bass`, `strings`, `choir`, `piano`, `lead`, `chip`, `orchestra-hit`, `drum-kick`, `drum-snare` | `bass` |
 | `filter` | `'off'`, `'led'` | `'off'` |
 | `bits` | 8 oder 6 | 8 |
-| `seed` | Zahl, legt die Lage des Tick-Rasters fest | 1 |
+| `seed` | Zahl, legt die Lage des Tick-Rasters und den Stand des Periodenzählers fest | 1 |
 
 Unbekannte Presets, Filterwerte oder Bittiefen werfen einen Fehler, ebenso nicht endliche Zahlen.
 Die gebauten Samples werden zwischengespeichert, höchstens 96 Kopien.
@@ -139,19 +142,22 @@ Die gebauten Samples werden zwischengespeichert, höchstens 96 Kopien.
 ## Pegel
 
 Jedes Preset hat einen festen Pegel, eingemessen über jede zweite Note von 24 bis 96, beide
-Filterstellungen, beide Bittiefen und zwei Seeds bei Anschlag 1, Ziel −1,5 dBFS. Es gibt keinen
+Filterstellungen, beide Bittiefen und 41 Seeds bei Anschlag 1, Ziel −1,5 dBFS. Es gibt keinen
 Begrenzer.
 
 ## Messwerte
 
-Durchlauf mit allen Presets, jeder zweiten Note von 24 bis 96, Anschlag 0,2, 0,6 und 1, beiden
-Filtern, beiden Bittiefen, Seeds 1 und 2,5, Haltezeit 0,8 s (7992 Töne):
+Durchlauf mit allen Presets, jeder zweiten Note von 24 bis 96, Anschlag 0,2 bis 1 in Schritten
+von 0,1, beiden Filtern, beiden Bittiefen, Haltezeit 0,8 s, bei Anschlag 1 mit 41 Seeds
+(65 268 Töne):
 
-- Lautester Ton bei Anschlag 1: −1,48 dBFS (`orchestra-hit`, MIDI 44).
-- Größter Sprung von Sample zu Sample: 0,43 im Anschlag von `piano` auf MIDI 94. Dort liegen
+- Lautester Ton: −1,47 dBFS (`orchestra-hit`, MIDI 44). Über 100 Seeds schwankt die Spitze eines
+  Tons um höchstens 0,03 dB.
+- Größter Sprung von Sample zu Sample: 0,44 im Anschlag von `piano` auf MIDI 94. Dort liegen
   starke Spiegelbilder bei 10 bis 20 kHz, ein Knacken ist es nicht.
-- Keine NaN, erstes und letztes Sample exakt 0, Gleichanteil unter 2 · 10⁻⁵.
-- Gleicher Seed ergibt bitgleiche Ausgabe, gebrochene Seeds weichen ab.
+- Keine NaN, erstes und letztes Sample exakt 0, Gleichanteil unter 3 · 10⁻⁵.
+- Gleicher Seed ergibt bitgleiche Ausgabe, gebrochene Seeds weichen ab. Das gilt auch für
+  Einmal-Samples wie `drum-snare` und `piano`.
 - Rechenzeit: 1,7 % der Klangdauer. Der erste Ton eines Presets baut die Samples, bei
   `orchestra-hit` dauert das etwa 0,1 s.
 - Spektrogramme der höchsten Noten (MIDI 84 bis 96) zeigen nur Linien bei Vielfachen des

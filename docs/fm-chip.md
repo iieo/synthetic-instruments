@@ -87,8 +87,10 @@ R, der Haltepegel 4 Bit in Schritten von 3 dB (Wert 15 heißt 93 dB). Aus R wird
 
 Der KSR-Anteil kommt aus Block und oberstem F-Bit, ohne gesetztes KSR-Bit durch 4 geteilt. Hohe
 Töne laufen so schneller ab. Ein globaler Zähler schreitet ein Sample pro Takt voran. Bei Rate r
-wird nur alle `2^(12 − r/4)` Samples geprüft, und in jedem Achterblock dieser Prüfungen treten 4
-bis 7 Schritte ein, je nach r mod 4. Ab r = 52 kommen mehrere Schritte pro Sample. Im Abfall
+wird nur alle `2^(12 − r/4)` Samples geprüft. Diese Prüfungen laufen in Achtergruppen: Jede
+ungerade Prüfung macht einen Schritt, und die beiden unteren Bits von r fügen Schritte auf geraden
+Plätzen hinzu, Bit 0 in der Mitte der Gruppe, Bit 1 an ihren Viertelpunkten. So hat eine Gruppe 4
+bis 7 Schritte. Ab r = 52 kommen mehrere Schritte pro Sample. Im Abfall
 wächst die Dämpfung um diese Schritte. Im Anstieg schrumpft sie pro Schritt um ein Achtel ihres
 Wertes plus eins, das gibt die typische, erst schnelle und dann weiche Anstiegskurve.
 
@@ -115,9 +117,27 @@ Tastaturskalierung des Pegels: 0, 1,5, 3 oder 6 dB pro Oktave über 65 Hz, geras
 Beide laufen mit festen Raten aus Zählern, die der Chip ständig weiterzählt:
 
 - Tremolo: Dreieck mit einer Periode von 13440 Samples (3,7 Hz), Tiefe 4,9 dB oder 1,1 dB.
-- Vibrato: acht Stufen 0, 1, 2, 1, 0, −1, −2, −1 über 8192 Samples (6,1 Hz). Die Stufe wird mal
-  F/128 (tief) oder F/256 zur F-Nummer addiert, das sind bis etwa 14 bzw. 7 Cent, in sichtbaren
-  Treppen.
+- Vibrato: acht Stufen über 8192 Samples (6,1 Hz), null, halber Hub, voller Hub, halber Hub und
+  dasselbe negativ. Der volle Hub ist `floor(F / 128)` (tief) oder `floor(F / 256)` F-Schritte,
+  der halbe die Hälfte davon, abgerundet. Das ergibt bis etwa 13 bzw. 7 Cent, in hörbaren
+  Treppen. Weil F in jeder Oktave dieselben Werte durchläuft, wiederholt sich die Tiefe:
+
+| MIDI | F | Hub tief | Cent tief | Hub flach | Cent flach |
+|---|---|---|---|---|---|
+| 60 | 690 | ±5 | ±12,5 | ±2 | ±5,0 |
+| 61 | 731 | ±5 | ±11,8 | ±2 | ±4,7 |
+| 62 | 774 | ±6 | ±13,4 | ±3 | ±6,7 |
+| 63 | 820 | ±6 | ±12,6 | ±3 | ±6,3 |
+| 64 | 869 | ±6 | ±11,9 | ±3 | ±6,0 |
+| 65 | 921 | ±7 | ±13,1 | ±3 | ±5,6 |
+| 66 | 975 | ±7 | ±12,4 | ±3 | ±5,3 |
+| 67 | 517 | ±4 | ±13,3 | ±2 | ±6,7 |
+| 68 | 547 | ±4 | ±12,6 | ±2 | ±6,3 |
+| 69 | 580 | ±4 | ±11,9 | ±2 | ±6,0 |
+| 70 | 615 | ±4 | ±11,2 | ±2 | ±5,6 |
+| 71 | 651 | ±5 | ±13,2 | ±2 | ±5,3 |
+
+`strings` nutzt das tiefe Vibrato, `organ` und `brass` das flache.
 
 Weil die Zähler frei laufen, steht ihre Phase beim Anschlag irgendwo. Der Seed legt fest, wo.
 
@@ -128,12 +148,16 @@ sondern aus Rauschen und einzelnen Phasenbits nehmen:
 
 - `drum-kick` ist eine normale Zwei-Operator-Stimme. Der Treiber senkt 70 Mal pro Sekunde die
   F-Nummer, die Tonhöhe fällt in Stufen vom 3,2-fachen auf den Grundton.
-- `drum-snare`: Ein Phasenbit des eigenen Zählers wählt zwischen zwei Phasen, das Rauschbit
-  dreht die Hälfte davon um. Heraus kommen fast nur die Werte voll positiv, null und voll negativ,
-  ein Rechtecksignal mit Rauschen.
-- `drum-hat`: Je zwei Bits aus zwei Phasenzählern (Verhältnis 1,47) werden per XOR verknüpft und
-  bestimmen das Vorzeichen, das Rauschbit wählt zwischen einem großen und einem kleinen Wert. Das
-  gibt den metallischen, rauen Klang.
+- `drum-snare`: Die Phase steht immer auf einem der vier Viertelpunkte des Sinus. Ein Bit des
+  eigenen Zählers wählt die Halbperiode, das Rauschbit wählt darin zwischen Scheitel und
+  Nulldurchgang. Heraus kommen nur die Werte voll positiv, null und voll negativ, ein
+  Rechtecksignal mit Rauschen.
+- `drum-hat`: Das Vorzeichen kommt aus zwei Zählern (Verhältnis 1,47). Es ist negativ, sobald in
+  einem der beiden Zähler zwei bestimmte Bits verschieden sind. Das Rauschbit wählt einen lauten
+  oder einen leisen Punkt im ersten Viertel des Sinus (bei 13/16 oder 3/16 des Viertels). Das gibt
+  den metallischen, rauen Klang.
+
+So beschreiben die Datenblätter solcher Chips das Verhalten im Rhythmusmodus.
 
 Das Rauschen kommt aus einem 23-Bit-Schieberegister mit Rückkopplung aus Bit 22 und 4, einmal pro
 Sample getaktet. Drums ignorieren `duration` und nehmen die Note als Stimmung: MIDI 60 ergibt eine
@@ -172,7 +196,7 @@ Gleichanteil von Halb-, Betrags- und Viertelsinus heraus.
 | `midi` | 24 … 96 | Note, auf ganze Zahlen gerundet |
 | `velocity` | 0 … 1 | Gesamtpegel des Trägers bis 15 dB leiser, des Modulators bis 6 dB leiser |
 | `duration` | 0,01 … 30 s | Taste gedrückt |
-| `brightness` | 0 … 1 | Gesamtpegel des Modulators um +9 dB (0) bis −9 dB (1), in Schritten von 0,75 dB |
+| `brightness` | 0 … 1 | Pegel des Modulators von 9 dB leiser (0, dunkel) bis 9 dB lauter (1, hell), in Schritten von 0,75 dB |
 | `waveform` | `sine`, `half`, `abs`, `quarter` | ersetzt die Welle des Trägers, ohne Angabe die des Presets |
 | `seed` | Zahl | Stand der Zähler für Tremolo, Vibrato und Hüllkurve und des Rauschregisters |
 
@@ -180,12 +204,15 @@ Ein Ton beginnt und endet exakt bei null.
 
 ## Messwerte
 
-Pegelprüfung über jede zweite Note des Umfangs, alle Presets, Anschlag 0,2, 0,6 und 1,
-`brightness` 0 und 1 mit allen vier Trägerwellen sowie mehrere Seeds (über 20000 Töne): lautester
-Ton −1,65 dBFS, kein NaN, erster und letzter Sample 0, Gleichanteil unter 3 · 10⁻⁶. Lange Töne
-(6 s) von Streichern, Orgel und Bläsern bleiben unter −2 dBFS.
+Pegelprüfung über jede zweite Note des Umfangs, alle tonalen Presets und die Bassdrum, Anschlag
+0,2 bis 1 in Schritten von 0,1, `brightness` 0 und 1 mit allen vier Trägerwellen sowie die
+Voreinstellung, bei Anschlag 1 sieben Seeds (39 960 Töne): lautester Ton −1,76 dBFS. Snare und
+Hi-Hat hängen am Rauschregister und wurden über jede vierte Note mit 500 Seeds geprüft
+(174 078 Töne): lautester Ton −1,52 dBFS (Hi-Hat), die Snare bis −1,76 dBFS. Kein NaN, erster und letzter Sample 0, Gleichanteil unter
+3 · 10⁻⁶. Längen von 0,01 s und 30 s bleiben unter −1,8 dBFS.
 
 Rechenzeit: etwa 60-mal schneller als Echtzeit.
 
 Hörbeispiel `demos/fm-chip.mjs`: 16 Takte in g-Moll im Stil eines PC-Spiels der frühen Neunziger
-mit allen Presets, −17,7 LUFS, True Peak −1,0 dBTP.
+mit allen Presets, 39,2 s lang, −17,8 LUFS, True Peak −1,0 dBTP. Die Datei endet erst, wenn
+der letzte Glockenton ausgeklungen ist, und ihr letzter Sample ist exakt null.

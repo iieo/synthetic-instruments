@@ -46,7 +46,7 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'bass', filter = 'off', bits = 8,
 } = {}) {
   if (preset == null) preset = 'bass';
-  const P = PRESETS[preset];
+  const P = Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`sampler8: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (filter == null) filter = 'off';
   if (!meta.filter.includes(filter)) throw new Error(`sampler8: filter must be 'off' or 'led', got ${filter}`);
@@ -64,8 +64,9 @@ export function render({
 
   // Event list in chip clocks: [time, level change].
   const T = [], D = [];
-  let vol = Math.round(64 * vel), held = 0, level = 0, per = period, pos = 0, t = 0;
   let k = 0, nextTick = r() * TICK, release = false, vpos = 0;
+  // The channel's period counter runs freely, so the first fetch comes somewhere within one period.
+  let vol = Math.round(64 * vel), held = 0, level = 0, per = period, pos = 0, t = Math.floor(r() * period);
   const gate = dur * CLK, vib = P.vibrato;
   const emit = (time, l) => { if (l !== level) { T.push(time); D.push(l - level); level = l; } };
   while (vol > 0) {

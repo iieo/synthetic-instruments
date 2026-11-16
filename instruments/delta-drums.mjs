@@ -11,11 +11,11 @@ export const meta = {
 };
 
 // Fixed gains in dB. Low rates lose level to the slew limit; MAKEUP lifts them by the median loss
-// across voices. Per voice, the loudest hit over all rates, tunings and seeds at velocity 1 then
-// peaks near -1.5 dBFS.
-const MAKEUP = [9.8, 9.0, 7.8, 6.9, 5.4, 4.9, 4.8, 4.1, 4.1, 3.5, 1.7, 1.6, 1.7, 0.8, 0.3, 0];
+// across voices. Per voice, the loudest hit over all rates, tunings, velocities and 200 seeds then
+// peaks near -2 dBFS.
+const MAKEUP = [9.5, 8.6, 7.9, 6.7, 5.9, 4.8, 5.2, 4.6, 3.6, 2.7, 2.3, 1.4, 1, 1, 0.3, 0];
 const GAIN = {
-  kick: -1.6, snare: 5.1, 'tom-high': 0.4, 'tom-low': -1.5, clap: 8.7, cowbell: 8.4, crash: 11, shout: 3.5, slap: 0.9,
+  kick: -2.1, snare: 3.7, 'tom-high': -0.3, 'tom-low': -1.8, clap: 7, cowbell: 7, crash: 8.5, shout: 2.9, slap: 0.3,
 };
 // Full-velocity source amplitude in counter steps around the rest level 64.
 const AMP = 60;
@@ -36,7 +36,7 @@ export function tunedIndex(i, semis) {
  */
 export function render({ voice = 'kick', velocity = 0.8, seed = 1, rate = 15, tune = 0 } = {}) {
   if (voice == null) voice = 'kick';
-  if (!VOICE_NAMES.includes(voice)) throw new Error(`delta-drums: unknown voice ${voice}, use one of ${VOICE_NAMES.join(', ')}`);
+  if (typeof voice !== 'string' || !VOICE_NAMES.includes(voice)) throw new Error(`delta-drums: unknown voice ${voice}, use one of ${VOICE_NAMES.join(', ')}`);
   const vel = num('delta-drums', 'velocity', velocity, 0.8, 0, 1);
   const ri = Math.round(num('delta-drums', 'rate', rate, 15, 0, 15));
   const tn = num('delta-drums', 'tune', tune, 0, -12, 12);

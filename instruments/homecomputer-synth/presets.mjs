@@ -1,4 +1,4 @@
-import { FRAME_HZ, hzToReg } from './chip.mjs';
+import { FRAME_HZ, REG_MAX, hzToReg, regToHz } from './chip.mjs';
 
 export const CHORDS = { major: [0, 4, 7, 12], minor: [0, 3, 7, 12], sus4: [0, 5, 7, 12], power: [0, 7, 12, 19] };
 
@@ -6,6 +6,10 @@ const semis = (f, s) => f * 2 ** (s / 12);
 const ramp = (k, k0, n) => Math.min(1, Math.max(0, (k - k0) / n));
 // Software vibrato of the player routine: one frequency write per frame, so it moves in steps.
 const vib = (k, delay, depth, rate) => depth * ramp(k, delay, 12) * Math.sin(2 * Math.PI * rate * k / FRAME_HZ);
+// The frequency register ends at 3750 Hz. Like the player routines did, a helper voice that would
+// go past it drops by octaves, so the note keeps its pitch instead of sticking at the top.
+const TOP = regToHz(REG_MAX);
+const fit = (f) => { while (f > TOP) f /= 2; return f; };
 const tri = (k, period) => { const p = (k % period) / period; return p < 0.5 ? 4 * p - 1 : 3 - 4 * p; };
 
 // A preset is a player routine: `setup` writes the registers before the note, `frame(k)` runs
@@ -48,7 +52,9 @@ export const PRESETS = {
       const v = vib(k, 12, 0.3, 5.5);
       c.v[0].hz(semis(o.f0, v));
       // The synced oscillator sweeps from about three times down towards 1.5 times the note.
-      c.v[1].hz(semis(o.f0, v) * (1.5 + 1.7 * 0.93 ** k + 0.25 * Math.sin(2 * Math.PI * 0.7 * k / FRAME_HZ)));
+      // Near the top the sweep is squeezed into the room left below the register limit.
+      const f = semis(o.f0, v), room = Math.min(1, (TOP / f - 1) / 2.45);
+      c.v[1].hz(f * (1 + room * (0.5 + 1.7 * 0.93 ** k + 0.25 * Math.sin(2 * Math.PI * 0.7 * k / FRAME_HZ))));
     },
   },
   'ring-bell': {
@@ -57,8 +63,10 @@ export const PRESETS = {
       c.mode('lp');
       const [a, b, src] = c.v;
       a.wave('tri'); a.ring = true; a.env(0, 10, 0, 10); a.hz(o.f0); a.filt = true;
-      src.wave('tri'); src.env(0, 0, 0, 0); src.hz(o.f0 * 2.76);
-      b.wave('tri'); b.env(0, 6, 0, 6); b.hz(o.f0 * 2); b.filt = true;
+      // Above the register limit the modulator moves down by two note frequencies: the upper
+      // sideband stays at 1.76 times the note, so the bell keeps its main partials.
+      src.wave('tri'); src.env(0, 0, 0, 0); src.hz(o.f0 * 2.76 > TOP ? o.f0 * 0.76 : o.f0 * 2.76);
+      b.wave('tri'); b.env(0, 6, 0, 6); b.hz(fit(o.f0 * 2)); b.filt = true;
     },
     frame() {},
   },
@@ -71,7 +79,7 @@ export const PRESETS = {
     },
     frame(k, c, o) {
       const ch = o.chord;
-      c.v[0].hz(semis(o.f0, ch[k % ch.length]));
+      c.v[0].hz(fit(semis(o.f0, ch[k % ch.length])));
       c.v[0].pw = o.pw + Math.round(o.pwmDepth * tri(k, 24));
     },
   },
@@ -96,7 +104,7 @@ export const PRESETS = {
       c.mode('lp');
       const [a, b] = c.v;
       a.wave(['saw', 'tri']); a.env(0, 9, 10, 4); a.hz(o.f0); a.filt = true;
-      b.wave(['pulse', 'tri']); b.env(0, 8, 8, 4); b.hz(o.f0 * 2); b.pw = o.pw; b.filt = true;
+      b.wave(['pulse', 'tri']); b.env(0, 8, 8, 4); b.hz(fit(o.f0 * 2)); b.pw = o.pw; b.filt = true;
     },
     frame(k, c, o) { c.v[1].pw = o.pw + Math.round(o.pwmDepth * tri(k, 60)); },
   },

@@ -175,8 +175,12 @@ Tons springt der Mittelwert, der Hochpass lässt ihn in etwa 13 ms abklingen. Da
 Prüflauf über jede zweite Note von 24 bis 96, Velocity 0,2, 0,6 und 1, alle Presets, Vibrato 0 und
 1, alle Hüllkurvenformen und Akkorde, Dauer 0,15 und 1,2 s, zwei Seeds (22644 Töne):
 
-- lautester Ton bei Velocity 1: −1,5 dBFS je Preset (feste Verstärkung pro Preset, keine
-  Begrenzung am Ausgang)
+- lautester Ton: −1,5 dBFS je Preset (feste Verstärkung pro Preset, keine Begrenzung am
+  Ausgang). Bei `noise-hat` und `noise-snare` hängt die Spitze vom Startwert des Rauschens ab.
+  Geprüft mit 500 Seeds, Dauer 0,01 bis 2 s, Vibrato aus und an; bei jedem zehnten Seed jede Note
+  und Velocity 0,2 bis 1, sonst jede sechste Note bei Velocity 1. Dazu ein Kontrolllauf mit 120
+  neuen Seeds. Ergebnis: höchstens −2,0 dBFS. Die
+  lauteste Spitze liegt oft bei Velocity 0,9, nicht bei 1. `kick` erreicht höchstens −1,4 dBFS.
 - Velocity 0,6 liegt 3 dB, Velocity 0,2 rund 15 dB darunter
 - keine NaN, jeder Ton beginnt und endet bei exakt 0
 - Gleichanteil höchstens 6 · 10⁻⁸ des Spitzenwerts
@@ -184,4 +188,4 @@ Prüflauf über jede zweite Note von 24 bis 96, Velocity 0,2, 0,6 und 1, alle Pr
 - etwa 280-fach schneller als Echtzeit
 
 Das Hörbeispiel spielt acht Takte in a-Moll mit Buzzer-Bass, Arpeggien,
-Echo-Melodie und Chip-Schlagzeug: −23,3 LUFS, True Peak −1,0 dBTP.
+Echo-Melodie und Chip-Schlagzeug: −22,5 LUFS, True Peak −1,0 dBTP.

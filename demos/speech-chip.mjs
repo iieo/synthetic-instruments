@@ -47,7 +47,7 @@ lead.forEach(([m, len], k) => {
 const answer = [[69, 0.5], [67, 0.5], [64, 1], [62, 0.5], [64, 0.5], [57, 2], [60, 1], [59, 1], [57, 2]];
 pos = 32;
 answer.forEach(([m, len], k) => {
-  put(pos, { preset: 'vocoder', midi: m, duration: len * beat * 0.85, velocity: 0.9, seed: 300 + k, rough: k === answer.length - 1 ? 0.8 : undefined }, 0.5);
+  put(pos, { preset: 'vocoder', midi: m, duration: len * beat * 0.85, velocity: 0.9, seed: 300 + k, rough: k === answer.length - 1 ? 0.8 : undefined }, 0.64);
   pos += len;
 });
 

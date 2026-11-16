@@ -87,8 +87,10 @@ Bis MIDI 96 bleibt der Fehler unter 10 Cent, ganz oben im Arpeggio von `powerup`
 erreicht er 26 Cent. Die frei laufenden VCOs (`laser`, `siren`, `ufo`, `alarm`, `hit`) sind nicht
 quantisiert.
 
-**Rauschen.** Ein Transistor in Sperrrichtung liefert weißes, gaußsches Rauschen (für Explosion
-und Treffer). Ein 17-Bit-Schieberegister mit Rückkopplung aus Bit 0 und Bit 3 (Länge 131 071),
+**Rauschen.** Ein Transistor in Sperrrichtung liefert weißes Rauschen (für Explosion und
+Treffer). Gerechnet wird es als Summe aus vier gleichverteilten Zufallszahlen, auf Varianz 1
+skaliert: fast gaußsch, aber hart auf ±3,46 begrenzt, damit ein langer Rauschstoß keinen seltenen
+Ausreißer über die Aussteuerung wirft. Ein 17-Bit-Schieberegister mit Rückkopplung aus Bit 0 und Bit 3 (Länge 131 071),
 getaktet mit freier Rate, liefert ±1 mit bandbegrenzten Flanken (für den Motor).
 
 **Filter.** Einpolige RC-Tief- und Hochpässe und ein zweipoliges aktives Filter (eine
@@ -110,8 +112,8 @@ entladen: `e(t) = (1 − exp(−t/τa)) · exp(−t/τd)`.
 - **ufo.** VCO, gewobbelt vom schnellen Kondensatordreieck (±2,5 Halbtöne, abgeflacht wie eine
   übersteuerte Transistorstufe) und einer langsamen Drift von 0,6 Hz (±0,8 Halbtöne), durch einen
   Bandpass bei 1,3·f.
-- **march.** Vier absteigende Bassschritte (0, −2, −3, −5 Halbtöne) aus dem Teiler, jeder ein
-  kurzer dumpfer Schlag: Rechteck in ein resonantes Tiefpassfilter bei 3,2·f, Hüllkurve neu
+- **march.** Vier Bassschritte aus dem Teiler, die auf und ab springen: Grundton, Quinte, kleine
+  Terz, kleine Septime (0, 7, 3, 10 Halbtöne). Jeder ist ein kurzer dumpfer Schlag: Rechteck in ein resonantes Tiefpassfilter bei 3,2·f, Hüllkurve neu
   ausgelöst bei jedem Schritt, Abklingen höchstens 0,16 s. `tempo` macht ihn schneller.
 - **coin.** Zwei Rechteck-Blips aus dem Teiler: 65 ms auf `midi`, dann die Quinte darüber, die
   ausklingt.
@@ -138,30 +140,40 @@ deshalb klicken die Notenwechsel nicht. Am Ende gehen alle Effekte durch einen H
 ## Pegel und Messung
 
 Feste Verstärkung pro Effekt. Kalibriert über jeden zweiten Halbton im Bereich, `length` 0,05,
-Standard und 5 s, `tempo` 30, Standard und 960, `rpm` 400, 1800 und 9000, Seeds 1, 2 und 3,5,
-dazu Velocity 0,2 und 0,6 (zusammen 4788 Renderings):
+0,2, Standard, 5 und 20 s, `tempo` 30, 90, Standard, 400 und 960, `rpm` 400, 900, Standard, 4000
+und 9000 bei Velocity 1 (der Pegel steigt mit Velocity monoton). Die Effekte mit Rauschen liefen mit
+vielen Seeds, ganze und gebrochene: `explosion` mit 1200 Seeds bei acht Längen bis 20 s, `hit` mit
+1200 Seeds bis 1,5 s und 400 Seeds bei 3 und 20 s, `ufo` und `engine` mit 205 Seeds. Zusammen rund
+220 000 Renderings:
 
 | Effekt | Verstärkung | lautester Wert (dBFS) |
 | --- | --- | --- |
 | `laser` | 0,757 | −1,5 |
-| `explosion` | 0,475 | −1,5 |
+| `explosion` | 0,375 | −2,0 |
 | `siren` | 0,743 | −1,5 |
-| `ufo` | 0,48 | −1,5 |
-| `march` | 0,53 | −1,5 |
-| `coin` | 0,777 | −1,5 |
+| `ufo` | 0,48 | −1,51 |
+| `march` | 0,53 | −1,51 |
+| `coin` | 0,777 | −1,51 |
 | `powerup` | 0,514 | −1,43 |
-| `hit` | 0,449 | −1,5 |
+| `hit` | 0,373 | −2,01 |
 | `alarm` | 0,623 | −1,51 |
-| `engine` | 0,333 | −1,41 |
-| `fanfare` | 0,428 | −1,33 |
-| `lose` | 0,564 | −1,5 |
+| `engine` | 0,333 | −1,37 |
+| `fanfare` | 0,428 | −1,27 |
+| `lose` | 0,564 | −1,42 |
 
-Kein NaN, erstes und letztes Sample immer null, größter Mittelwert 6·10⁻⁴ (bei sehr kurzen
-Effekten, in denen der Koppelkondensator noch einschwingt), größter Sprung zwischen zwei Samples
-0,44 (bandbegrenzte Rechteckflanke). Spektrogramme von Sweeps und hohen Tönen zeigen über 21 kHz
-nichts und keine Spiegelfrequenzen. Gerechnet wird 35 bis 90-mal schneller als Echtzeit.
+Explosion und Treffer liegen tiefer, weil ihr Spitzenwert vom Rauschen abhängt und mit der Zahl
+der Seeds noch langsam wächst. Das begrenzte Rauschen setzt dabei eine feste Obergrenze.
 
-Demo: `node demos/arcade-sfx.mjs` schreibt `out/arcade-sfx.wav` (31 s, mono): Münzen und
-Fanfare, ein Marsch, der in acht Stufen schneller wird, darüber Schüsse, Treffer und ein Ufo, eine
-Explosion, zwei Power-ups, Sirene, Alarm, Motor in zwei Drehzahlen und die Verlierermelodie. Eine
-lineare Verstärkung auf −1 dBFS Spitze, −15,1 LUFS integriert, True Peak −1,0 dBTP.
+Kein NaN, erstes und letztes Sample immer null. Der Mittelwert eines ganzen Effekts hängt von
+seiner Länge ab: Ab 1 s Länge bleibt er unter 5·10⁻⁴, der größte Wert kommt vom Motor bei 400 U/min,
+dessen Grundton mit 13 Hz unter dem Koppelkondensator liegt. Bei sehr kurzen Effekten kann der
+Koppelkondensator nicht einschwingen, und der Mittelwert erreicht bis 3·10⁻² (Motor bei 50 ms und
+niedriger Drehzahl, das sind nur ein oder zwei Zündimpulse). Größter Sprung zwischen zwei Samples
+0,83 (bandbegrenzte Rechteckflanke der Münze). Spektrogramme von Sweeps und hohen Tönen zeigen über
+21 kHz nichts und keine Spiegelfrequenzen. Gerechnet wird 35 bis 90-mal schneller als Echtzeit.
+
+Demo: `node demos/arcade-sfx.mjs` schreibt `out/arcade-sfx.wav` (30 s, mono): Münzen und
+Fanfare, ein Marsch in gleichbleibendem Tempo mit Münzen und zwei Power-ups darüber, dann ein Ufo,
+das unter Beschuss und Treffern explodiert, Sirene, Alarm, Motor in zwei Drehzahlen und die
+Verlierermelodie. Eine lineare Verstärkung auf −1 dBFS Spitze, −15,6 LUFS integriert, True Peak
+−1,0 dBTP.

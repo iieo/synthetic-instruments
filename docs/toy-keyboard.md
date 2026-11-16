@@ -202,7 +202,8 @@ Sustain in allen Kombinationen, fünf Startwerte (29 280 Töne):
 - Gleichanteil unter 1e−5 des Spitzenpegels
 - größter Sprung zwischen zwei Samples 0,47 (die Flanke eines hellen Pulses, kein Knacken)
 - Tonhöhe: gemessen gleich Modell auf 0,001 Cent, Fehler gegen gleichstufig höchstens 6,2 Cent
-- Rhythmusbox über alle Muster, 60 bis 200 BPM und fünf Startwerte: höchstens −1,3 dBFS
+- Rhythmusbox über alle Muster, 60 bis 200 BPM und 304 Startwerte, ganze und gebrochene (26 976
+  Durchläufe): höchstens −2,15 dBFS (`bossa` bei 198 BPM, dort fallen die meisten Schläge zusammen)
 - Rechenzeit: etwa 200-fache Echtzeit für einzelne Töne, die Demo (37 s) in 3 s
 
 Die Demo `demos/toy-keyboard.mjs` spielt sechzehn Takte in F-Dur zur Rock-Rhythmusbox: einen

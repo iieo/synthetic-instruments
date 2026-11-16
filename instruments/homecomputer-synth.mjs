@@ -33,10 +33,10 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'lead', filter, resonance, pw, chord = 'major',
 } = {}) {
   if (preset == null) preset = 'lead';
-  const P = PRESETS[preset];
+  const P = Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`homecomputer-synth: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (chord == null) chord = 'major';
-  if (!CHORDS[chord]) throw new Error(`homecomputer-synth: chord must be one of ${meta.chords.join(', ')}, got ${chord}`);
+  if (!Object.hasOwn(CHORDS, chord)) throw new Error(`homecomputer-synth: chord must be one of ${meta.chords.join(', ')}, got ${chord}`);
   midi = Math.round(num('midi', midi, 60, ...meta.range));
   const vel = num('velocity', velocity, 0.8, 0, 1);
   const dur = num('duration', duration, 0.5, 0.01, 30);

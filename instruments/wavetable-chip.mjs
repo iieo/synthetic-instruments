@@ -46,7 +46,7 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'soft-bass', volumeShift = 0, morph = 0.5,
 } = {}) {
   if (preset == null) preset = 'soft-bass';
-  const P = PRESETS[preset];
+  const P = Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`wavetable-chip: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   midi = Math.round(num('midi', midi, 60, ...meta.range));
   const vel = num('velocity', velocity, 0.8, 0, 1);

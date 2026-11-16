@@ -22,11 +22,11 @@ export const meta = { name: 'Arcade SFX', range: [24, 108], voices: Object.keys(
 // Fixed gain per voice: the loudest note over midi, tempo, rpm, length, velocity and seeds peaks
 // near -1.5 dBFS.
 const GAIN = {
-  laser: 0.757, explosion: 0.475, siren: 0.743, ufo: 0.48, march: 0.53, coin: 0.777, powerup: 0.514, hit: 0.449,
+  laser: 0.757, explosion: 0.375, siren: 0.743, ufo: 0.48, march: 0.53, coin: 0.777, powerup: 0.514, hit: 0.373,
   alarm: 0.623, engine: 0.333, fanfare: 0.428, lose: 0.564,
 };
 
-const MARCH_STEPS = [0, -2, -3, -5];
+const MARCH_STEPS = [0, 7, 3, 10];
 
 function num(name, v, def, lo, hi) {
   if (v === undefined || v === null) return def;
@@ -86,8 +86,9 @@ function ufo({ n, f0, rate, r }) {
   return y;
 }
 
-// Four bass steps from the divider, each a short thump: square into a resonant low-pass, its
-// amplitude a capacitor discharge retriggered on every step.
+// Four bass steps from the divider (root, fifth, minor third, minor seventh), each a short
+// thump: square into a resonant low-pass, its amplitude a capacitor discharge retriggered on
+// every step.
 function march({ n, midi, rate }) {
   const step = SR / rate, decay = Math.min(0.16, 0.5 / rate);
   const fr = (i) => divHz(hz(midi + MARCH_STEPS[Math.floor(i / step) % 4]));
@@ -212,7 +213,7 @@ const RENDER = { laser, explosion, siren, ufo, march, coin, powerup, hit, alarm,
  */
 export function render({ voice = 'laser', midi, velocity = 0.8, seed = 1, length, tempo, rpm } = {}) {
   if (voice == null) voice = 'laser';
-  const V = VOICES[voice];
+  const V = typeof voice === 'string' && Object.hasOwn(VOICES, voice) ? VOICES[voice] : null;
   if (!V) throw new Error(`arcade-sfx: unknown voice ${voice}, use one of ${meta.voices.join(', ')}`);
   const [lo, hi] = V.range ?? meta.range;
   const m = clamp(num('midi', midi, V.midi ?? 60, meta.range[0], meta.range[1]), lo, hi);

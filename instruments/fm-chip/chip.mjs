@@ -26,10 +26,11 @@ export function opOut(phase, att, ws) {
   return neg && ws === 0 ? -m : m;
 }
 
-// Envelope increments: within every eight ticks of a rate's clock, 4 to 7 of them step.
-const PATTERN = [
-  [0, 1, 0, 1, 0, 1, 0, 1], [0, 1, 0, 1, 1, 1, 0, 1], [0, 1, 1, 1, 0, 1, 1, 1], [0, 1, 1, 1, 1, 1, 1, 1],
-];
+// Envelope increments: a rate's clock ticks in groups of eight. Every odd tick steps; the low two
+// bits of the rate add steps on even ticks, bit 0 in the middle of the group, bit 1 at its quarter
+// points, so a group has 4 to 7 steps.
+const PATTERN = [0, 1, 2, 3].map((fine) => Array.from({ length: 8 }, (_, j) =>
+  (j & 1 ? 1 : j === 4 ? fine & 1 : j === 2 || j === 6 ? fine >> 1 : 0)));
 export function envInc(rate, cnt) {
   if (rate < 4) return 0;
   if (rate >= 60) return 8;

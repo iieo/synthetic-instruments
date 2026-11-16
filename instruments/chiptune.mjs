@@ -43,10 +43,10 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'lead', vibrato, arp = 'major', crush = 'off',
 } = {}) {
   if (preset == null) preset = 'lead';
-  const P = PRESETS[preset];
+  const P = typeof preset === 'string' && Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`chiptune: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (arp == null) arp = 'major';
-  if (!CHORDS[arp]) throw new Error(`chiptune: arp must be one of ${meta.arp.join(', ')}, got ${arp}`);
+  if (typeof arp !== 'string' || !Object.hasOwn(CHORDS, arp)) throw new Error(`chiptune: arp must be one of ${meta.arp.join(', ')}, got ${arp}`);
   midi = Math.round(num('midi', midi, 60, meta.range[0], meta.range[1]));
   const vel = num('velocity', velocity, 0.8, 0, 1);
   const dur = num('duration', duration, 0.5, 0.01, 30);

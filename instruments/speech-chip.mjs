@@ -22,8 +22,10 @@ export const meta = {
   name: 'Sprachchip', range: [36, 72], presets: Object.keys(PRESETS), vowel: Object.keys(VOWELS),
 };
 
-// Fixed output gain per preset, calibrated over range, vowels, roughness, bend and seeds.
-const GAIN = { aah: 1.07, ooh: 1.07, eee: 1.07, robot: 1.07, choir: 0.34, vocoder: 0.76, ba: 1.06, da: 0.96, ka: 1.07, sa: 0.97 };
+// Fixed output gain per preset from random sweeps over all options. The loudest single chip lands
+// at -2 dBFS. The vocoder (two chips) and the choir (four panned chips) would stay below -1 dBFS
+// even if every chip reached that loudest peak at the same sample.
+const GAIN = { aah: 0.95, ooh: 0.95, eee: 0.95, robot: 0.95, choir: 0.29, vocoder: 0.53, ba: 0.95, da: 0.95, ka: 0.95, sa: 0.95 };
 // Output RMS the encoder aims for at full velocity, in lattice units, and the DAC scaling.
 const R0 = 0.4, OUT_SCALE = 0.55;
 const FRAME_SEC = FRAME / CHIP_SR;
@@ -87,10 +89,10 @@ export function render({
   midi = 48, velocity = 0.8, duration = 0.6, seed = 1, preset = 'aah', vowel, bend = 0, rough,
 } = {}) {
   if (preset == null) preset = 'aah';
-  const P = PRESETS[preset];
+  const P = typeof preset === 'string' && Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`speech-chip: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   if (vowel == null) vowel = P.vowel;
-  if (!VOWELS[vowel]) throw new Error(`speech-chip: vowel must be one of ${meta.vowel.join(', ')}, got ${vowel}`);
+  if (typeof vowel !== 'string' || !Object.hasOwn(VOWELS, vowel)) throw new Error(`speech-chip: vowel must be one of ${meta.vowel.join(', ')}, got ${vowel}`);
   midi = num('midi', midi, 48, meta.range[0], meta.range[1]);
   const vel = num('velocity', velocity, 0.8, 0, 1);
   const dur = num('duration', duration, 0.6, FRAME_SEC, 30);

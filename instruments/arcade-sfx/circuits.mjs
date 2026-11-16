@@ -55,14 +55,11 @@ export function lfsr(n, clock, state = 1) {
   return bus.out();
 }
 
-// Shot noise of a reverse-biased junction: white and Gaussian.
+// Shot noise of a reverse-biased junction: white, near Gaussian (sum of four uniforms, unit
+// variance) and bounded to +-3.46 so a long burst cannot throw a rare outlier.
 export function whiteNoise(n, r) {
-  const y = new Float64Array(n);
-  for (let i = 0; i < n; i += 2) {
-    const u = Math.max(1e-12, r()), v = r(), m = Math.sqrt(-2 * Math.log(u));
-    y[i] = m * Math.cos(2 * Math.PI * v);
-    if (i + 1 < n) y[i + 1] = m * Math.sin(2 * Math.PI * v);
-  }
+  const y = new Float64Array(n), k = Math.sqrt(3);
+  for (let i = 0; i < n; i++) y[i] = (r() + r() + r() + r() - 2) * k;
   return y;
 }
 

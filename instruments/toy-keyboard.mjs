@@ -41,7 +41,7 @@ export function render({
   midi = 60, velocity = 0.8, duration = 0.5, seed = 1, preset = 'organ', vibrato, sustain = 'off',
 } = {}) {
   if (preset == null) preset = 'organ';
-  const P = PRESETS[preset];
+  const P = typeof preset === 'string' && Object.hasOwn(PRESETS, preset) ? PRESETS[preset] : null;
   if (!P) throw new Error(`toy-keyboard: unknown preset ${preset}, use one of ${meta.presets.join(', ')}`);
   midi = Math.round(num('midi', midi, 60, ...meta.range));
   const vel = num('velocity', velocity, 0.8, 0, 1);
