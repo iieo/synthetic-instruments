@@ -1,4 +1,4 @@
-import { optionApplies } from './util.js';
+import { optionApplies, optionValue } from './util.js';
 
 let ctx = null;
 let master = null;
@@ -43,9 +43,8 @@ export function soundUrl(inst, { midi, pad, velocity = 0.8, duration = 1, bpm, s
   if (inst.usesBpm && bpm) q.set('bpm', String(Math.round(Math.max(40, Math.min(220, bpm)))));
   q.set('seed', String(seed));
   for (const o of inst.options || []) {
-    if (!optionApplies(o, padId)) continue;
-    const v = opts[o.key];
-    q.set(`o_${o.key}`, o.values.some((x) => x.id === v) ? v : o.values[0].id);
+    if (!optionApplies(o, padId, opts)) continue;
+    q.set(`o_${o.key}`, optionValue(o, opts));
   }
   return `/api/render?${q}`;
 }

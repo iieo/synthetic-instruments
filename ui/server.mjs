@@ -268,7 +268,10 @@ function parseNum(q, name, def, lo, hi, int = false) {
 }
 
 const rangeFor = (inst, opts) => (inst.ranges && inst.ranges[opts.preset]) || inst.range;
-const optionApplies = (o, pad) => !o.pads || o.pads.includes(pad);
+// Options and single values can be limited to some pads (`pads`) or some presets (`presets`).
+const inScope = (list, v) => !list || list.includes(v);
+const optionApplies = (o, pad, opts) => inScope(o.pads, pad) && inScope(o.presets, opts && opts.preset);
+const optionValues = (o, opts) => o.values.filter((v) => inScope(v.presets, opts && opts.preset));
 
 function parseRequest(inst, q) {
   const job = {
@@ -287,15 +290,19 @@ function parseRequest(inst, q) {
     if (allowed.includes(k)) continue;
     const o = k.startsWith('o_') && inst.options.find((x) => `o_${x.key}` === k);
     if (!o) throw new HttpError(400, `unbekannter Parameter ${k}`);
-    if (!optionApplies(o, job.pad)) throw new HttpError(400, `${o.key} gilt nur für ${o.pads.join(', ')}`);
   }
   job.duration = inst.usesDuration ? Math.round(parseNum(q, 'duration', 1, 0.05, 10) * 100) / 100 : null;
   job.bpm = inst.usesBpm ? parseNum(q, 'bpm', null, 40, 220, true) : null;
+  // The preset comes first in inst.options, so options scoped to presets see the chosen one.
   for (const o of inst.options) {
-    if (!optionApplies(o, job.pad)) continue;
     const raw = q.get(`o_${o.key}`);
-    const chosen = raw === null || raw === '' ? o.values[0] : o.values.find((v) => v.id === raw);
-    if (!chosen) throw new HttpError(400, `${o.key} muss einer von ${o.values.map((v) => v.id).join(', ')} sein`);
+    if (!optionApplies(o, job.pad, job.opts)) {
+      if (raw !== null) throw new HttpError(400, `${o.key} gilt nur für ${(inScope(o.pads, job.pad) ? o.presets : o.pads).join(', ')}`);
+      continue;
+    }
+    const values = optionValues(o, job.opts);
+    const chosen = raw === null || raw === '' ? values[0] : values.find((v) => v.id === raw);
+    if (!chosen) throw new HttpError(400, `${o.key} muss einer von ${values.map((v) => v.id).join(', ')} sein`);
     job.opts[o.key] = chosen.id;
   }
   if (!inst.pads) {

@@ -63,7 +63,17 @@ export function rangeText(inst) {
 
 // The selected preset may play a narrower range than the instrument as a whole.
 export const noteRange = (inst, opts) => (inst.ranges && opts && inst.ranges[opts.preset]) || inst.range;
-export const optionApplies = (o, pad) => !o.pads || o.pads.includes(pad);
+// Options and single values can be limited to some pads (`pads`) or some presets (`presets`).
+const inScope = (list, v) => !list || list.includes(v);
+export const presetApplies = (o, opts) => inScope(o.presets, opts && opts.preset);
+export const optionApplies = (o, pad, opts) => inScope(o.pads, pad) && presetApplies(o, opts);
+export const optionValues = (o, opts) => o.values.filter((v) => inScope(v.presets, opts && opts.preset));
+export const optionValue = (o, opts) => {
+  const values = optionValues(o, opts);
+  const v = opts && opts[o.key];
+  return values.some((x) => x.id === v) ? v : values[0].id;
+};
+export const presetScoped = (inst) => (inst.options || []).some((o) => o.presets || o.values.some((v) => v.presets));
 
 export const defaultOpts = (inst) => Object.fromEntries((inst.options || []).map((o) => [o.key, o.values[0].id]));
 

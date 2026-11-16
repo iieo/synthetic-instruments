@@ -1,4 +1,5 @@
-import { store, el, select, instrumentOptions, noteName, debounce, progressText, defaultOpts, isTyping, noteRange, optionApplies } from './util.js';
+import { store, el, select, instrumentOptions, noteName, debounce, progressText, defaultOpts, isTyping, noteRange, optionApplies,
+  optionValues, optionValue, presetScoped } from './util.js';
 import { audioCtx, masterNode, buildMaster, soundUrl, getBuffer, peekBuffer, prefetch, unlockAudio, encodeWav } from './audio.js';
 
 const MAX_STEPS = 32;
@@ -502,10 +503,11 @@ export function createSequencer(root) {
           { 'aria-label': 'Tonlänge in Sechzehnteln', title: 'Tonlänge in Sechzehnteln' }));
       }
       for (const o of inst.options || []) {
-        if (inst.pads && !optionApplies(o, row.pad)) continue;
-        head.append(select(o.values.map((v) => ({ value: v.id, label: v.label })), row.opts[o.key] ?? o.values[0].id, (v) => {
+        if (!optionApplies(o, inst.pads ? row.pad : undefined, row.opts)) continue;
+        head.append(select(optionValues(o, row.opts).map((v) => ({ value: v.id, label: v.label })), optionValue(o, row.opts), (v) => {
           row.opts[o.key] = v;
-          if (inst.ranges && o.key === 'preset') { fitRow(row, inst); changed({ rebuild: true }); } else changed();
+          if (inst.ranges && o.key === 'preset') { fitRow(row, inst); changed({ rebuild: true }); }
+          else changed(o.key === 'preset' && presetScoped(inst) ? { rebuild: true } : undefined);
         }, { 'aria-label': o.label, title: o.label }));
       }
     }

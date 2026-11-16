@@ -133,6 +133,52 @@ export const CATALOG = {
   theremin: { title: 'Theremin', category: 'Elektronisch',
     labels: { classic: 'Klassisch', scifi: 'Science-Fiction', soft: 'Sanft' },
     desc: 'Ein elektronisches Instrument, das ohne Berührung gespielt wird. Eine Hand an der Antenne steuert stufenlos die Tonhöhe, die andere die Lautstärke, und der Ton entsteht aus der Schwebung zweier Hochfrequenzoszillatoren.' },
+  chiptune: { title: 'Chiptune (8-Bit)', category: 'Elektronisch',
+    labels: { lead: 'Lead', arp: 'Arpeggio', bass: 'Bass', pulse12: 'Puls 12,5 %', pulse25: 'Puls 25 %', pulse50: 'Rechteck 50 %',
+      triangle: 'Dreieck', wave: 'Wellenspeicher', noise: 'Rauschen', 'noise-short': 'Rauschen metallisch',
+      kick: 'Kick', snare: 'Snare', hat: 'Hi-Hat', laser: 'Laser', coin: 'Münze' },
+    desc: 'Die Soundchips der 8-Bit-Spielkonsolen und Heimcomputer der Achtziger. Pulskanäle mit wenigen Tastverhältnissen, ein Dreieck in groben 4-Bit-Stufen und ein Rauschgenerator aus einem Schieberegister, gesteuert von einem Treiber, der 60-mal pro Sekunde Tonhöhe und Lautstärke neu setzt.' },
+  'square-chip': { title: 'Rechteck-Chip', category: 'Elektronisch',
+    labels: { square: 'Rechteck', 'echo-lead': 'Lead mit Echo', arp: 'Arpeggio-Akkord', 'buzz-saw': 'Buzzer-Bass Säge',
+      'buzz-tri': 'Buzzer-Bass Dreieck', 'env-pluck': 'Hüllkurven-Zupfer', 'noise-hat': 'Hi-Hat (Rauschen)',
+      'noise-snare': 'Snare (Rauschen)', kick: 'Kick' },
+    desc: 'Der Soundchip vieler Heimcomputer der Achtziger mit drei Rechteckkanälen, einem Rauschgenerator und einer Hüllkurve in Hardware. Läuft die Hüllkurve schnell genug, wird sie selbst zur Wellenform und brummt als typischer Buzzer-Bass.' },
+  beeper: { title: 'Beeper', category: 'Elektronisch',
+    labels: { square: 'Rechteck', pwm: 'Pulsbreite (dünn nach fett)', chord: 'Akkord (Multiplex)', 'pin-pulse': 'Pulsstimmen',
+      'drum-kick': 'Kick', 'drum-noise': 'Rauschen', piezo: 'Piezo-Summer' },
+    desc: 'Der eingebaute Lautsprecher früher PCs und Heimcomputer, der nur an und aus kannte. Töne, Akkorde und Schlagzeug entstehen allein daraus, wann die CPU das eine Bit umschaltet, dazu kommt der Piezo-Summer der LCD-Handspiele.' },
+  'delta-drums': { title: 'Delta-Drums', category: 'Elektronisch',
+    labels: { kick: 'Bassdrum', snare: 'Snare', 'tom-high': 'Tom hoch', 'tom-low': 'Tom tief', clap: 'Clap', cowbell: 'Kuhglocke',
+      crash: 'Becken', shout: 'Ruf „Hey“', slap: 'Slap-Bass' },
+    desc: 'Der 1-Bit-Sample-Kanal einer Spielkonsole der Achtziger, über den Spiele Schlagzeug, Slap-Bass und kurze Rufe abspielten. Ein 7-Bit-Zähler kann pro Bit nur um zwei Stufen steigen oder fallen, deshalb klingen die Schläge bei niedriger Rate körnig und gebremst.' },
+  sampler8: { title: '8-Bit-Sampler', category: 'Elektronisch',
+    labels: { bass: 'Synth-Bass', strings: 'Streicher', choir: 'Chor', piano: 'Klavier', lead: 'Lead mit Vibrato', chip: 'Chip (32 Byte)',
+      'orchestra-hit': 'Orchesterschlag', 'drum-kick': 'Bassdrum', 'drum-snare': 'Snare' },
+    desc: 'Der vierstimmige Sample-Chip eines Heimcomputers der späten Achtziger, auf dem die Tracker-Musik entstand. Er spielt 8-Bit-Samples mit ganzzahligen Perioden ab und hält jeden Wert bis zum nächsten. Das gibt den rauen, glasigen Klang, den ein fester Tiefpass und der zuschaltbare LED-Filter weicher machen.' },
+  'speech-chip': { title: 'Sprachchip', category: 'Elektronisch',
+    labels: { aah: 'Aah', ooh: 'Uuh', eee: 'Iih', robot: 'Roboter', choir: 'Chor', vocoder: 'Vocoder-artig',
+      ba: 'Silbe ba', da: 'Silbe da', ka: 'Silbe ka', sa: 'Silbe sa' },
+    desc: 'Die Roboterstimme der Sprachchips aus Spielzeug, Spielautomaten und Heimcomputern der frühen Achtziger. Ein Kreuzgliedfilter zehnter Ordnung formt aus Chirp-Pulsen oder Rauschen bei 8 kHz die Vokale, alle 25 ms kommt ein grob gerundeter Rahmen aus Energie, Tonhöhe und Koeffizienten.' },
+  'arcade-sfx': { title: 'Arcade-Effekte', category: 'Elektronisch',
+    labels: { laser: 'Laser', explosion: 'Explosion', siren: 'Sirene', ufo: 'Ufo', march: 'Marsch', coin: 'Münze', powerup: 'Power-up',
+      hit: 'Treffer', alarm: 'Alarm', engine: 'Motor', fanfare: 'Fanfare', lose: 'Verloren' },
+    desc: 'Soundeffekte der Spielautomaten aus den späten Siebzigern, gebaut aus einzelnen Schaltungen statt aus einem Soundchip. Kippstufen, von Kondensatorkurven gefahrene Oszillatoren, Rauschen aus Schieberegister oder Transistor und RC-Filter machen Schüsse, Explosionen, Sirenen und kurze Melodien.' },
+  'toy-keyboard': { title: 'Spielzeug-Keyboard', category: 'Elektronisch',
+    labels: { piano: 'Klavier', organ: 'Orgel', flute: 'Flöte', violin: 'Geige', trumpet: 'Trompete', 'synth-drum': 'Synth-Drum',
+      bells: 'Glocken', fantasy: 'Fantasy' },
+    desc: 'Eine billige Kindertastatur der Achtziger. Ein einziger Takt wird durch zwölf ganzzahlige Teiler auf die Töne gebracht, einfache RC-Filter machen aus den Rechtecken Klavier, Flöte oder Trompete, und ein Kondensator formt jeden Ton.' },
+  'wavetable-chip': { title: 'Wellenkanal', category: 'Elektronisch',
+    labels: { 'soft-bass': 'Weicher Bass', organ: 'Orgel', saw: 'Sägezahn', 'square-ish': 'Fast Rechteck', vocal: 'Vokal', bell: 'Glocke',
+      'bit-harp': 'Bit-Harfe', 'pwm-sweep': 'Pulsdurchlauf' },
+    desc: 'Der 4-Bit-Wellenkanal tragbarer Spielkonsolen. Eine Welle aus 32 Werten läuft in einer Schleife, die Lautstärke kennt nur vier Stufen, und der Spieltreiber tauscht die Welle Bild für Bild aus, damit sich der Klang bewegt.' },
+  'homecomputer-synth': { title: 'Heimcomputer-Synth', category: 'Elektronisch',
+    labels: { bass: 'Bass', lead: 'Puls-Lead', 'sync-lead': 'Sync-Lead', 'ring-bell': 'Ringmod-Glocke', arp: 'Arpeggio', pad: 'Fläche',
+      combo: 'Kombi-Welle', 'drum-kick': 'Bassdrum', 'drum-snare': 'Snare' },
+    desc: 'Der dreistimmige Klangchip der Heimcomputer aus den Achtzigern. Digitale Oszillatoren mit Sägezahn, Dreieck, Puls und Rauschen laufen durch ein analoges, resonantes Filter, und die Abspielroutine schreibt 50 Mal pro Sekunde Tonhöhe, Pulsbreite und Filter neu.' },
+  'fm-chip': { title: 'FM-Soundkarte', category: 'Elektronisch',
+    labels: { piano: 'Klavier', organ: 'Orgel', brass: 'Bläser', bass: 'Bass', strings: 'Streicher', bell: 'Glocke', guitar: 'Gitarre',
+      'drum-kick': 'Bassdrum', 'drum-snare': 'Snare', 'drum-hat': 'Hi-Hat' },
+    desc: 'Der FM-Chip der Soundkarten früher PCs, der die Musik vieler Spiele der frühen Neunziger spielte. Jede Stimme hat nur zwei Sinus-Operatoren mit groben Tabellen und vier Wellenformen. Das gibt den rauen, leicht blechernen Klang.' },
 };
 
 export const CATEGORY_ORDER = ['Tasten', 'Saiten', 'Blas', 'Schlagwerk', 'Welt', 'Elektronisch', 'Sonstiges'];
@@ -172,6 +218,9 @@ const STOP_LABELS = {
 // Choices for numeric parameters. `undefined` lets the instrument take the value from its preset.
 const choices = (key, label, list) => ({ key, label, values: list.map(([value, l]) => ({ id: value === undefined ? 'preset' : String(value), label: l, value })) });
 const FROM_PRESET = 'Preset-Standard';
+// `presets` limits an option (or one of its values) to the presets it changes.
+const forPresets = (presets, o) => ({ ...o, presets });
+const SQUARE_ONE_SHOT = ['decay', 'attack', 'decay-high', 'attack-hold'];
 
 export const OPTIONS = {
   organ: (meta) => {
@@ -258,6 +307,68 @@ export const OPTIONS = {
   theremin: () => [
     choices('vibrato', 'Vibrato', [[undefined, FROM_PRESET], [0, 'Aus'], [0.2, 'Leicht'], [0.6, 'Stark']]),
     choices('swell', 'Anschwellen', [[undefined, FROM_PRESET], [0.03, 'Sofort'], [0.8, 'Langsam']]),
+  ],
+  chiptune: () => [
+    choices('vibrato', 'Vibrato', [[undefined, FROM_PRESET], [0, 'Aus'], [0.4, 'Leicht'], [1, 'Stark']]),
+    choices('arp', 'Akkord (Arpeggio)', [['major', 'Dur'], ['minor', 'Moll'], ['power', 'Quinte und Oktave']]),
+    choices('crush', 'DAC', [['off', 'Normal'], [8, '8 Bit'], [4, '4 Bit']]),
+  ],
+  'square-chip': () => {
+    const shapes = choices('envelopeShape', 'Hüllkurve', [[undefined, FROM_PRESET], ['decay', 'Abklingen'], ['attack', 'Anschwellen'],
+      ['decay-high', 'Abklingen, dann voll'], ['attack-hold', 'Anschwellen und halten'], ['saw-down', 'Säge fallend'],
+      ['saw-up', 'Säge steigend'], ['tri-down', 'Dreieck fallend'], ['tri-up', 'Dreieck steigend']]);
+    // The buzzer presets need a repeating shape, the one-shot shapes only work on env-pluck.
+    shapes.values = shapes.values.map((v) => (SQUARE_ONE_SHOT.includes(v.value) ? { ...v, presets: ['env-pluck'] } : v));
+    return [
+      forPresets(['arp'], choices('arp', 'Akkord (Arpeggio)', [['major', 'Dur'], ['minor', 'Moll'], ['sus4', 'Sus4'],
+        ['power', 'Quinte mit Oktave'], ['octave', 'Oktave'], ['maj7', 'Major 7']])),
+      forPresets(['buzz-saw', 'buzz-tri', 'env-pluck'], shapes),
+      forPresets(['square', 'echo-lead', 'arp', 'buzz-saw', 'buzz-tri', 'env-pluck'],
+        choices('vibrato', 'Vibrato', [[undefined, FROM_PRESET], [0, 'Ohne'], [0.4, 'Leicht'], [1, 'Stark']])),
+    ];
+  },
+  beeper: () => [
+    forPresets(['chord', 'pin-pulse'], choices('chord', 'Akkord', [['major', 'Dur'], ['minor', 'Moll'], ['sus4', 'Sus4'],
+      ['dim', 'Vermindert'], ['power', 'Quinte'], ['octave', 'Oktave']])),
+    forPresets(['pwm'], choices('duty', 'Pulsbreite', [[undefined, 'Durchlauf'], [0.05, 'Sehr dünn'], [0.15, 'Dünn'], [0.3, 'Mittel'], [0.5, 'Rechteck']])),
+  ],
+  'delta-drums': () => [
+    choices('rate', 'Rate', [[15, 'Sauber (33 kHz)'], [12, 'Hell (22 kHz)'], [7, 'Mittel (11 kHz)'], [3, 'Körnig (6,3 kHz)'], [0, 'Grob (4,2 kHz)']]),
+    choices('tune', 'Stimmung', [[0, 'Original'], [-12, 'Oktave tiefer'], [-5, 'Quarte tiefer'], [5, 'Quarte höher'], [12, 'Oktave höher']]),
+  ],
+  sampler8: () => [
+    choices('filter', 'Filter', [['off', 'Aus'], ['led', 'LED-Filter']]),
+    choices('bits', 'Auflösung', [[8, '8 Bit'], [6, '6 Bit']]),
+  ],
+  'speech-chip': () => [
+    choices('vowel', 'Vokal', [[undefined, FROM_PRESET], ['a', 'A'], ['e', 'E'], ['i', 'I'], ['o', 'O'], ['u', 'U']]),
+    choices('rough', 'Rauheit', [[undefined, FROM_PRESET], [0, 'Fein'], [0.5, 'Mittel'], [1, 'Grob']]),
+    choices('bend', 'Gleiten', [[0, 'Aus'], [2, 'Ganzton hoch'], [12, 'Oktave hoch'], [-12, 'Oktave tief']]),
+  ],
+  'arcade-sfx': () => [
+    { ...choices('tempo', 'Tempo', [[undefined, 'Standard'], [60, 'Langsam'], [200, 'Schnell'], [480, 'Sehr schnell']]),
+      pads: ['siren', 'ufo', 'march', 'alarm'] },
+    { ...choices('rpm', 'Drehzahl', [[undefined, '1800 U/min'], [900, 'Leerlauf'], [4500, 'Hoch'], [8000, 'Vollgas']]), pads: ['engine'] },
+    choices('length', 'Länge', [[undefined, 'Standard'], [1, '1 s'], [4, '4 s']]),
+  ],
+  'toy-keyboard': () => [
+    choices('vibrato', 'Vibrato', [[undefined, 'Wie Klangfarbe'], ['on', 'An'], ['off', 'Aus']]),
+    choices('sustain', 'Sustain', [['off', 'Aus'], ['on', 'An']]),
+  ],
+  'wavetable-chip': () => [
+    choices('volumeShift', 'Auflösung', [[0, '100 %'], [1, '50 %'], [2, '25 %']]),
+    forPresets(['vocal', 'bell', 'bit-harp', 'pwm-sweep'], choices('morph', 'Animation', [[0.5, 'Normal'], [0.1, 'Langsam'], [0.9, 'Schnell']])),
+  ],
+  'homecomputer-synth': () => [
+    choices('filter', 'Filter', [[undefined, FROM_PRESET], [0.1, 'Dunkel'], [0.4, 'Mittel'], [0.9, 'Offen']]),
+    choices('resonance', 'Resonanz', [[undefined, FROM_PRESET], [0, 'Keine'], [0.5, 'Mittel'], [1, 'Stark']]),
+    forPresets(['bass', 'lead', 'arp', 'pad', 'combo'], choices('pw', 'Pulsbreite', [[undefined, FROM_PRESET], [0.1, 'Schmal'], [0.5, 'Quadrat']])),
+    forPresets(['arp'], choices('chord', 'Arpeggio-Akkord', [['major', 'Dur'], ['minor', 'Moll'], ['sus4', 'Sus4'], ['power', 'Quinte und Oktave']])),
+  ],
+  'fm-chip': () => [
+    forPresets(['piano', 'organ', 'brass', 'bass', 'strings', 'bell', 'guitar', 'drum-kick'],
+      choices('brightness', 'Helligkeit', [[0.5, 'Normal'], [0.2, 'Weich'], [0.85, 'Hell']])),
+    choices('waveform', 'Trägerwelle', [[undefined, FROM_PRESET], ['sine', 'Sinus'], ['half', 'Halbsinus'], ['abs', 'Betragssinus'], ['quarter', 'Viertelsinus']]),
   ],
   'music-box': () => [
     choices('ring', 'Ausklingen bis Dämpfer', [[undefined, 'Frei ausklingen'], [2, 'Nach 2 s'], [1, 'Nach 1 s'], [0.4, 'Nach 0,4 s']]),

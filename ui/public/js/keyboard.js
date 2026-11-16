@@ -1,4 +1,5 @@
-import { store, el, select, instrumentOptions, noteName, isBlack, debounce, keyLabel, progressText, defaultOpts, isTyping, noteRange } from './util.js';
+import { store, el, select, instrumentOptions, noteName, isBlack, debounce, keyLabel, progressText, defaultOpts, isTyping, noteRange,
+  presetApplies, presetScoped, optionValues, optionValue } from './util.js';
 import { soundUrl, getBuffer, peekBuffer, playBuffer, prefetch, unlockAudio } from './audio.js';
 
 const PIANO_CODES = ['KeyA', 'KeyW', 'KeyS', 'KeyE', 'KeyD', 'KeyF', 'KeyT', 'KeyG', 'KeyY', 'KeyH', 'KeyU', 'KeyJ', 'KeyK', 'KeyO', 'KeyL', 'KeyP', 'Semicolon', 'Quote'];
@@ -243,13 +244,15 @@ export function createKeyboard(root) {
     if (i.usesBpm && !i.usesDuration) {
       controls.append(slider('Tempo', 60, 200, 1, state.bpm, (v) => `${v} BPM`, (v) => { state.bpm = v; persist(); prerender(); }));
     }
+    const current = opts();
     for (const o of i.options || []) {
+      if (!presetApplies(o, current)) continue;
       controls.append(el('label', { class: 'field' }, el('span', { text: o.label }),
-        select(o.values.map((v) => ({ value: v.id, label: v.label })), opts()[o.key], (v) => {
+        select(optionValues(o, current).map((v) => ({ value: v.id, label: v.label })), optionValue(o, current), (v) => {
           const before = String(range());
           state.optsByInst[i.id] = { ...(state.optsByInst[i.id] || {}), [o.key]: v };
           persist();
-          if (String(range()) !== before) render(); else prerender();
+          if (String(range()) !== before || (o.key === 'preset' && presetScoped(i))) render(); else prerender();
         })));
     }
     progressEl = el('span', { class: 'progress', 'aria-live': 'polite' });
